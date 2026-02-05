@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertSupplierSchema, insertManufacturerSchema, insertColorRangeSchema, insertProductGroupSchema, insertMaterialWithThicknessesSchema } from "@shared/schema";
+import { insertSupplierSchema, insertManufacturerSchema, insertColorRangeSchema, insertProductGroupSchema, insertMaterialWithSizesSchema } from "@shared/schema";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
 
 export async function registerRoutes(
@@ -212,9 +212,9 @@ export async function registerRoutes(
 
   app.post("/api/materials", async (req, res) => {
     try {
-      const parsed = insertMaterialWithThicknessesSchema.parse(req.body);
-      const { thicknesses, ...materialData } = parsed;
-      const material = await storage.createMaterial(materialData, thicknesses);
+      const parsed = insertMaterialWithSizesSchema.parse(req.body);
+      const { sizes, ...materialData } = parsed;
+      const material = await storage.createMaterial(materialData, sizes);
       res.json(material);
     } catch (error) {
       console.error("Create material error:", error);
@@ -225,9 +225,9 @@ export async function registerRoutes(
   app.patch("/api/materials/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const parsed = insertMaterialWithThicknessesSchema.partial().parse(req.body);
-      const { thicknesses, ...materialData } = parsed;
-      const material = await storage.updateMaterial(id, materialData, thicknesses);
+      const parsed = insertMaterialWithSizesSchema.partial().parse(req.body);
+      const { sizes, ...materialData } = parsed;
+      const material = await storage.updateMaterial(id, materialData, sizes);
       if (!material) {
         return res.status(404).json({ error: "Material not found" });
       }

@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Loader2, Plus, X, ExternalLink } from "lucide-react";
 import { insertMaterialWithSizesSchema, type MaterialWithRelations, type Supplier, type Manufacturer, type ColorRange, type ProductGroup, type InsertMaterialWithSizes } from "@shared/schema";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useUpload } from "@/hooks/use-upload";
 
 const materialFormSchema = insertMaterialWithSizesSchema.extend({
@@ -32,12 +32,21 @@ interface MaterialDialogProps {
 export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [sizes, setSizes] = useState<{ width: string; length: string; thickness: string }[]>(
-    material?.sizes?.map(s => ({ width: s.width, length: s.length, thickness: s.thickness })) || []
-  );
+  const [sizes, setSizes] = useState<{ width: string; length: string; thickness: string }[]>([]);
   const [newWidth, setNewWidth] = useState("");
   const [newLength, setNewLength] = useState("");
   const [newThickness, setNewThickness] = useState("");
+
+  useEffect(() => {
+    if (material?.sizes) {
+      setSizes(material.sizes.map(s => ({ width: s.width, length: s.length, thickness: s.thickness })));
+    } else {
+      setSizes([]);
+    }
+    setNewWidth("");
+    setNewLength("");
+    setNewThickness("");
+  }, [material]);
 
   const { uploadFile, isUploading: isUploadingImage } = useUpload({
     onSuccess: (response) => {

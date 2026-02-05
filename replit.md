@@ -33,10 +33,10 @@ The backend uses a storage pattern (`server/storage.ts`) that abstracts database
 The schema defines a hierarchical structure:
 - **Suppliers**: Companies that sell materials (e.g., Whitewood)
 - **Manufacturers**: Companies that make materials (e.g., Tafisa, Uniboard)
-- **Color Ranges**: Product lines from manufacturers (e.g., Karisma, Rivera)
+- **Color Collections**: Product lines from manufacturers (e.g., Karisma, Rivera)
 - **Product Groups**: Categories for materials (e.g., Interior Colors, Sublime Collection)
-- **Materials**: Individual products with references to supplier, manufacturer, color range, and product group
-- **Material Thicknesses**: Available thicknesses for each material with stock status
+- **Materials**: Individual products with references to supplier, manufacturer, color collection, and product group
+- **Material Sizes**: Available size options (width × length @ thickness) for each material - combines dimensions and thickness into single entries since availability varies by combination (e.g., 4ft x 8ft @ 5/8")
 
 ### Build System
 - Development uses Vite dev server with HMR
@@ -75,7 +75,12 @@ The schema defines a hierarchical structure:
 - **Non-Stock** (`inStock: false`): A special order material that must be ordered when needed
 - This is a permanent classification, not a temporary inventory status
 - **No "out of stock" concept**: This is a material catalog, not inventory tracking
-- **Thickness options**: Materials can have multiple thickness options (e.g., 5/8", 3/4", 1") - these are just available sizes with no individual stock status
+
+### Size Options
+- Materials can have multiple size options combining width, length, and thickness (e.g., "4ft x 8ft @ 5/8"", "5x10 @ 3/4"")
+- Size options are stored in `materialSizes` table with `width`, `length`, and `thickness` fields
+- Availability varies by combination - certain sizes may only be available in specific thicknesses
+- Display format: "width x length @ thickness"
 
 ### Technical Notes
 - SelectItem components cannot use empty string values due to Radix Select requirements. Use "all" or similar non-empty placeholder values for "All items" options.
