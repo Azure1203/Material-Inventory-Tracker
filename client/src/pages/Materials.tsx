@@ -22,6 +22,7 @@ export default function Materials() {
   const [supplierFilter, setSupplierFilter] = useState<string>("all");
   const [manufacturerFilter, setManufacturerFilter] = useState<string>("all");
   const [productGroupFilter, setProductGroupFilter] = useState<string>("all");
+  const [costFilter, setCostFilter] = useState<string>("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState<MaterialWithRelations | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -83,10 +84,11 @@ export default function Materials() {
       const matchesSupplier = supplierFilter === "all" || material.supplierId === parseInt(supplierFilter);
       const matchesManufacturer = manufacturerFilter === "all" || material.manufacturerId === parseInt(manufacturerFilter);
       const matchesProductGroup = productGroupFilter === "all" || material.productGroupId === parseInt(productGroupFilter);
+      const matchesCost = costFilter === "all" || material.costLevel === parseInt(costFilter);
 
-      return matchesSearch && matchesStock && matchesSupplier && matchesManufacturer && matchesProductGroup;
+      return matchesSearch && matchesStock && matchesSupplier && matchesManufacturer && matchesProductGroup && matchesCost;
     });
-  }, [materials, searchQuery, stockFilter, supplierFilter, manufacturerFilter, productGroupFilter]);
+  }, [materials, searchQuery, stockFilter, supplierFilter, manufacturerFilter, productGroupFilter, costFilter]);
 
   const clearFilters = () => {
     setSearchQuery("");
@@ -94,9 +96,10 @@ export default function Materials() {
     setSupplierFilter("all");
     setManufacturerFilter("all");
     setProductGroupFilter("all");
+    setCostFilter("all");
   };
 
-  const hasFilters = searchQuery || stockFilter !== "all" || supplierFilter !== "all" || manufacturerFilter !== "all" || productGroupFilter !== "all";
+  const hasFilters = searchQuery || stockFilter !== "all" || supplierFilter !== "all" || manufacturerFilter !== "all" || productGroupFilter !== "all" || costFilter !== "all";
 
   const handleEdit = (material: MaterialWithRelations) => {
     setEditingMaterial(material);
@@ -194,6 +197,20 @@ export default function Materials() {
                   {productGroups?.map(pg => (
                     <SelectItem key={pg.id} value={String(pg.id)}>{pg.name}</SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={costFilter} onValueChange={setCostFilter}>
+                <SelectTrigger className="w-[120px]" data-testid="filter-cost">
+                  <SelectValue placeholder="Cost" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Costs</SelectItem>
+                  <SelectItem value="1">$ (Level 1)</SelectItem>
+                  <SelectItem value="2">$$ (Level 2)</SelectItem>
+                  <SelectItem value="3">$$$ (Level 3)</SelectItem>
+                  <SelectItem value="4">$$$$ (Level 4)</SelectItem>
+                  <SelectItem value="5">$$$$$ (Level 5)</SelectItem>
                 </SelectContent>
               </Select>
 
