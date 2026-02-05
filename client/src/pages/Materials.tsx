@@ -206,7 +206,7 @@ export default function Materials() {
                 {materials?.length === 0 ? "No materials yet. Add your first material!" : "No materials match your filters"}
               </p>
               {hasFilters && (
-                <Button variant="link" onClick={clearFilters} className="mt-2">
+                <Button variant="ghost" onClick={clearFilters} className="mt-2">
                   Clear filters
                 </Button>
               )}
@@ -246,7 +246,9 @@ export default function Materials() {
                       <TableCell>
                         <div className="flex flex-col">
                           <div className="flex items-center gap-2">
-                            <span className="font-medium">{material.name}</span>
+                            <span className="font-medium">
+                              {material.productCode ? `${material.productCode} ${material.name}` : material.name}
+                            </span>
                             {material.websiteUrl && (
                               <a 
                                 href={material.websiteUrl} 
@@ -260,7 +262,7 @@ export default function Materials() {
                             )}
                           </div>
                           <span className="text-xs text-muted-foreground">
-                            {[material.productCode, material.finish, material.colorRange?.name].filter(Boolean).join(" • ")}
+                            {[material.finish, material.colorRange?.name].filter(Boolean).join(" • ")}
                           </span>
                         </div>
                       </TableCell>
@@ -283,8 +285,8 @@ export default function Materials() {
                             material.thicknesses.map(t => (
                               <Badge 
                                 key={t.id} 
-                                variant={t.inStock ? "secondary" : "outline"}
-                                className={`text-xs ${!t.inStock ? "opacity-50 line-through" : ""}`}
+                                variant="secondary"
+                                className="text-xs"
                               >
                                 {t.thickness}
                               </Badge>
