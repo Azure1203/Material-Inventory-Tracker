@@ -220,8 +220,7 @@ export default function Materials() {
                     <TableHead>Material</TableHead>
                     <TableHead>Manufacturer</TableHead>
                     <TableHead>Supplier</TableHead>
-                    <TableHead>Size</TableHead>
-                    <TableHead>Thicknesses</TableHead>
+                    <TableHead>Size Options</TableHead>
                     <TableHead>Cost</TableHead>
                     <TableHead>Type</TableHead>
                     <TableHead className="w-[100px]">Actions</TableHead>
@@ -273,22 +272,15 @@ export default function Materials() {
                         <span className="text-sm">{material.supplier?.name || "-"}</span>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm">
-                          {material.width && material.length 
-                            ? `${material.width} x ${material.length}` 
-                            : material.width || material.length || "-"}
-                        </span>
-                      </TableCell>
-                      <TableCell>
                         <div className="flex flex-wrap gap-1">
-                          {material.thicknesses?.length > 0 ? (
-                            material.thicknesses.map(t => (
+                          {material.sizes?.length > 0 ? (
+                            material.sizes.map(s => (
                               <Badge 
-                                key={t.id} 
+                                key={s.id} 
                                 variant="secondary"
                                 className="text-xs"
                               >
-                                {t.thickness}
+                                {s.width} x {s.length} @ {s.thickness}
                               </Badge>
                             ))
                           ) : (

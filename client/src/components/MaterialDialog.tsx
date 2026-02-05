@@ -11,17 +11,17 @@ import { Switch } from "@/components/ui/switch";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Loader2, Plus, X, ExternalLink, Upload } from "lucide-react";
-import { insertMaterialWithThicknessesSchema, type MaterialWithRelations, type Supplier, type Manufacturer, type ColorRange, type ProductGroup, type InsertMaterialWithThicknesses } from "@shared/schema";
+import { Loader2, Plus, X, ExternalLink } from "lucide-react";
+import { insertMaterialWithSizesSchema, type MaterialWithRelations, type Supplier, type Manufacturer, type ColorRange, type ProductGroup, type InsertMaterialWithSizes } from "@shared/schema";
 import { useState } from "react";
 import { useUpload } from "@/hooks/use-upload";
 
-const materialFormSchema = insertMaterialWithThicknessesSchema.extend({
+const materialFormSchema = insertMaterialWithSizesSchema.extend({
   name: z.string().min(1, "Name is required"),
   costLevel: z.number().min(1).max(5).default(1),
 });
 
-type MaterialFormData = InsertMaterialWithThicknesses;
+type MaterialFormData = InsertMaterialWithSizes;
 
 interface MaterialDialogProps {
   open: boolean;
@@ -32,9 +32,11 @@ interface MaterialDialogProps {
 export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [thicknesses, setThicknesses] = useState<{ thickness: string }[]>(
-    material?.thicknesses?.map(t => ({ thickness: t.thickness })) || []
+  const [sizes, setSizes] = useState<{ width: string; length: string; thickness: string }[]>(
+    material?.sizes?.map(s => ({ width: s.width, length: s.length, thickness: s.thickness })) || []
   );
+  const [newWidth, setNewWidth] = useState("");
+  const [newLength, setNewLength] = useState("");
   const [newThickness, setNewThickness] = useState("");
 
   const { uploadFile, isUploading: isUploadingImage } = useUpload({
@@ -64,18 +66,16 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
       manufacturerId: material?.manufacturerId || null,
       colorRangeId: material?.colorRangeId || null,
       productGroupId: material?.productGroupId || null,
-      width: material?.width || "",
-      length: material?.length || "",
       imageUrl: material?.imageUrl || "",
       websiteUrl: material?.websiteUrl || "",
       notes: material?.notes || "",
-      thicknesses: [],
+      sizes: [],
     },
   });
 
   const createMutation = useMutation({
     mutationFn: async (data: MaterialFormData) => {
-      const response = await apiRequest("POST", "/api/materials", { ...data, thicknesses });
+      const response = await apiRequest("POST", "/api/materials", { ...data, sizes });
       return response.json();
     },
     onSuccess: () => {
@@ -83,7 +83,7 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
       toast({ title: "Material created successfully" });
       onOpenChange(false);
       form.reset();
-      setThicknesses([]);
+      setSizes([]);
     },
     onError: () => {
       toast({ title: "Failed to create material", variant: "destructive" });
@@ -92,7 +92,7 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
 
   const updateMutation = useMutation({
     mutationFn: async (data: MaterialFormData) => {
-      const response = await apiRequest("PATCH", `/api/materials/${material?.id}`, { ...data, thicknesses });
+      const response = await apiRequest("PATCH", `/api/materials/${material?.id}`, { ...data, sizes });
       return response.json();
     },
     onSuccess: () => {
@@ -113,15 +113,21 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
     }
   };
 
-  const addThickness = () => {
-    if (newThickness.trim()) {
-      setThicknesses([...thicknesses, { thickness: newThickness.trim() }]);
+  const addSize = () => {
+    if (newWidth.trim() && newLength.trim() && newThickness.trim()) {
+      setSizes([...sizes, { 
+        width: newWidth.trim(), 
+        length: newLength.trim(), 
+        thickness: newThickness.trim() 
+      }]);
+      setNewWidth("");
+      setNewLength("");
       setNewThickness("");
     }
   };
 
-  const removeThickness = (index: number) => {
-    setThicknesses(thicknesses.filter((_, i) => i !== index));
+  const removeSize = (index: number) => {
+    setSizes(sizes.filter((_, i) => i !== index));
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -326,63 +332,50 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="width"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Width</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., 4ft or 1220mm" {...field} value={field.value || ""} data-testid="input-width" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="length"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Length</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., 8ft or 2800mm" {...field} value={field.value || ""} data-testid="input-length" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
             <div className="space-y-2">
-              <FormLabel>Thickness Options</FormLabel>
+              <FormLabel>Size Options</FormLabel>
+              <p className="text-xs text-muted-foreground">Add available size and thickness combinations (e.g., 4ft x 8ft @ 5/8")</p>
               <div className="flex gap-2">
                 <Input 
-                  placeholder='e.g., 5/8"' 
+                  placeholder="Width (e.g., 4ft)" 
+                  value={newWidth}
+                  onChange={(e) => setNewWidth(e.target.value)}
+                  className="flex-1"
+                  data-testid="input-new-width"
+                />
+                <Input 
+                  placeholder="Length (e.g., 8ft)" 
+                  value={newLength}
+                  onChange={(e) => setNewLength(e.target.value)}
+                  className="flex-1"
+                  data-testid="input-new-length"
+                />
+                <Input 
+                  placeholder='Thickness (e.g., 5/8")' 
                   value={newThickness}
                   onChange={(e) => setNewThickness(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addThickness())}
+                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addSize())}
+                  className="flex-1"
                   data-testid="input-new-thickness"
                 />
-                <Button type="button" variant="outline" size="icon" onClick={addThickness} data-testid="button-add-thickness">
+                <Button type="button" variant="outline" size="icon" onClick={addSize} data-testid="button-add-size">
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
-              {thicknesses.length > 0 && (
+              {sizes.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {thicknesses.map((t, index) => (
+                  {sizes.map((s, index) => (
                     <div 
                       key={index} 
                       className="flex items-center gap-2 px-3 py-1.5 rounded-md border bg-muted/50"
-                      data-testid={`thickness-${index}`}
+                      data-testid={`size-${index}`}
                     >
-                      <span className="text-sm font-medium">{t.thickness}</span>
+                      <span className="text-sm font-medium">{s.width} x {s.length} @ {s.thickness}</span>
                       <button
                         type="button"
-                        onClick={() => removeThickness(index)}
+                        onClick={() => removeSize(index)}
                         className="text-muted-foreground hover:text-foreground"
-                        data-testid={`remove-thickness-${index}`}
+                        data-testid={`remove-size-${index}`}
                       >
                         <X className="h-3 w-3" />
                       </button>
