@@ -67,3 +67,14 @@ The schema defines a hierarchical structure:
 - `@replit/vite-plugin-cartographer`: Development tooling
 - `@replit/vite-plugin-dev-banner`: Development environment indicator
 - Object storage routes (`server/replit_integrations/object_storage/`) handle Replit's cloud storage service
+
+## Design Decisions
+
+### Stock Classification Terminology
+- **Stock Item** (`inStock: true`): A regularly stocked material that is always available
+- **Non-Stock** (`inStock: false`): A special order material that must be ordered when needed
+- This is a permanent classification, not a temporary inventory status
+
+### Technical Notes
+- SelectItem components cannot use empty string values due to Radix Select requirements. Use "all" or similar non-empty placeholder values for "All items" options.
+- Object storage routes use regex pattern `/^\/objects\/(.+)$/` for Express 5 compatibility with nested paths
