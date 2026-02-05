@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Package, CheckCircle, XCircle, Building2, Factory, Palette, Layers } from "lucide-react";
+import { Package, CheckCircle, Building2, Factory, Palette, Layers } from "lucide-react";
 import type { MaterialWithRelations, Supplier, Manufacturer, ColorRange, ProductGroup } from "@shared/schema";
 
 export default function Dashboard() {
@@ -69,7 +69,6 @@ export default function Dashboard() {
     },
   ];
 
-  const nonStockItems = materials?.filter(m => !m.inStock).slice(0, 5) || [];
   const materialsByGroup = productGroups?.map(group => ({
     ...group,
     count: materials?.filter(m => m.productGroupId === group.id).length || 0,
@@ -107,44 +106,7 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <XCircle className="h-4 w-4 text-amber-500" />
-              Non-Stock Items (Special Order)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map(i => (
-                  <Skeleton key={i} className="h-12 w-full" />
-                ))}
-              </div>
-            ) : nonStockItems.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <CheckCircle className="h-12 w-12 mx-auto mb-2 text-green-500 opacity-50" />
-                <p>All materials are stock items!</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {nonStockItems.map(material => (
-                  <div key={material.id} className="flex items-center justify-between p-3 rounded-md bg-muted/50" data-testid={`non-stock-${material.id}`}>
-                    <div>
-                      <p className="font-medium text-sm">{material.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {material.manufacturer?.name || "Unknown manufacturer"}
-                      </p>
-                    </div>
-                    <Badge variant="secondary" className="text-xs">Non-Stock</Badge>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
+      <div className="grid grid-cols-1 gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
