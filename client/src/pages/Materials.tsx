@@ -262,7 +262,7 @@ export default function Materials() {
                             )}
                           </div>
                           <span className="text-xs text-muted-foreground">
-                            {[material.finish, material.colorRange?.name].filter(Boolean).join(" • ")}
+                            {[material.productCode, material.finish, material.colorRange?.name].filter(Boolean).join(" • ")}
                           </span>
                         </div>
                       </TableCell>
