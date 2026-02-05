@@ -78,8 +78,6 @@ export const materials = pgTable("materials", {
   manufacturerId: integer("manufacturer_id").references(() => manufacturers.id),
   colorRangeId: integer("color_range_id").references(() => colorRanges.id),
   productGroupId: integer("product_group_id").references(() => productGroups.id),
-  width: text("width"), // e.g., "4ft", "1220mm"
-  length: text("length"), // e.g., "8ft", "2800mm"
   imageUrl: text("image_url"),
   websiteUrl: text("website_url"),
   notes: text("notes"),
@@ -102,43 +100,47 @@ export const materialsRelations = relations(materials, ({ one, many }) => ({
     fields: [materials.productGroupId],
     references: [productGroups.id],
   }),
-  thicknesses: many(materialThicknesses),
+  sizes: many(materialSizes),
 }));
 
 export const insertMaterialSchema = createInsertSchema(materials).omit({ id: true });
 export type InsertMaterial = z.infer<typeof insertMaterialSchema>;
 export type Material = typeof materials.$inferSelect;
 
-// Material Thicknesses table (a material can have multiple thickness options)
-export const materialThicknesses = pgTable("material_thicknesses", {
+// Material Sizes table (a material can have multiple size/thickness combinations)
+export const materialSizes = pgTable("material_sizes", {
   id: serial("id").primaryKey(),
   materialId: integer("material_id").notNull().references(() => materials.id, { onDelete: "cascade" }),
+  width: text("width").notNull(), // e.g., "4ft", "1220mm"
+  length: text("length").notNull(), // e.g., "8ft", "2800mm"
   thickness: text("thickness").notNull(), // e.g., "5/8\"", "3/4\"", "1\""
 });
 
-export const materialThicknessesRelations = relations(materialThicknesses, ({ one }) => ({
+export const materialSizesRelations = relations(materialSizes, ({ one }) => ({
   material: one(materials, {
-    fields: [materialThicknesses.materialId],
+    fields: [materialSizes.materialId],
     references: [materials.id],
   }),
 }));
 
-export const insertMaterialThicknessSchema = createInsertSchema(materialThicknesses).omit({ id: true });
-export type InsertMaterialThickness = z.infer<typeof insertMaterialThicknessSchema>;
-export type MaterialThickness = typeof materialThicknesses.$inferSelect;
+export const insertMaterialSizeSchema = createInsertSchema(materialSizes).omit({ id: true });
+export type InsertMaterialSize = z.infer<typeof insertMaterialSizeSchema>;
+export type MaterialSize = typeof materialSizes.$inferSelect;
 
-// Schema for thickness array validation (used in material create/update)
-export const thicknessInputSchema = z.object({
+// Schema for size array validation (used in material create/update)
+export const sizeInputSchema = z.object({
+  width: z.string().min(1, "Width is required"),
+  length: z.string().min(1, "Length is required"),
   thickness: z.string().min(1, "Thickness is required"),
 });
-export const thicknessArraySchema = z.array(thicknessInputSchema).optional();
-export type ThicknessInput = z.infer<typeof thicknessInputSchema>;
+export const sizeArraySchema = z.array(sizeInputSchema).optional();
+export type SizeInput = z.infer<typeof sizeInputSchema>;
 
-// Extended material schema with thicknesses for create/update operations
-export const insertMaterialWithThicknessesSchema = insertMaterialSchema.extend({
-  thicknesses: thicknessArraySchema,
+// Extended material schema with sizes for create/update operations
+export const insertMaterialWithSizesSchema = insertMaterialSchema.extend({
+  sizes: sizeArraySchema,
 });
-export type InsertMaterialWithThicknesses = z.infer<typeof insertMaterialWithThicknessesSchema>;
+export type InsertMaterialWithSizes = z.infer<typeof insertMaterialWithSizesSchema>;
 
 // Extended types for frontend use
 export type MaterialWithRelations = Material & {
@@ -146,7 +148,7 @@ export type MaterialWithRelations = Material & {
   manufacturer?: Manufacturer | null;
   colorRange?: ColorRange | null;
   productGroup?: ProductGroup | null;
-  thicknesses: MaterialThickness[];
+  sizes: MaterialSize[];
 };
 
 // Users table (kept for potential future auth)

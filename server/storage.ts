@@ -1,11 +1,11 @@
 import { 
-  suppliers, materials, manufacturers, colorRanges, productGroups, materialThicknesses,
+  suppliers, materials, manufacturers, colorRanges, productGroups, materialSizes,
   type Supplier, type InsertSupplier,
   type Manufacturer, type InsertManufacturer,
   type ColorRange, type InsertColorRange,
   type ProductGroup, type InsertProductGroup,
   type Material, type InsertMaterial,
-  type MaterialThickness, type InsertMaterialThickness,
+  type MaterialSize, type InsertMaterialSize,
   type MaterialWithRelations
 } from "@shared/schema";
 import { db } from "./db";
@@ -43,8 +43,8 @@ export interface IStorage {
   // Materials
   getMaterials(): Promise<MaterialWithRelations[]>;
   getMaterial(id: number): Promise<MaterialWithRelations | undefined>;
-  createMaterial(data: InsertMaterial, thicknesses?: { thickness: string }[]): Promise<MaterialWithRelations>;
-  updateMaterial(id: number, data: Partial<InsertMaterial>, thicknesses?: { thickness: string }[]): Promise<MaterialWithRelations | undefined>;
+  createMaterial(data: InsertMaterial, sizes?: { width: string; length: string; thickness: string }[]): Promise<MaterialWithRelations>;
+  updateMaterial(id: number, data: Partial<InsertMaterial>, sizes?: { width: string; length: string; thickness: string }[]): Promise<MaterialWithRelations | undefined>;
   deleteMaterial(id: number): Promise<boolean>;
 }
 
@@ -163,7 +163,7 @@ export class DatabaseStorage implements IStorage {
     const manufacturerList = await db.select().from(manufacturers);
     const colorRangeList = await db.select().from(colorRanges);
     const productGroupList = await db.select().from(productGroups);
-    const thicknessList = await db.select().from(materialThicknesses);
+    const sizeList = await db.select().from(materialSizes);
 
     const supplierMap = new Map(supplierList.map(s => [s.id, s]));
     const manufacturerMap = new Map(manufacturerList.map(m => [m.id, m]));
@@ -176,7 +176,7 @@ export class DatabaseStorage implements IStorage {
       manufacturer: m.manufacturerId ? manufacturerMap.get(m.manufacturerId) || null : null,
       colorRange: m.colorRangeId ? colorRangeMap.get(m.colorRangeId) || null : null,
       productGroup: m.productGroupId ? productGroupMap.get(m.productGroupId) || null : null,
-      thicknesses: thicknessList.filter(t => t.materialId === m.id),
+      sizes: sizeList.filter(s => s.materialId === m.id),
     }));
   }
 
@@ -196,7 +196,7 @@ export class DatabaseStorage implements IStorage {
     const [productGroup] = material.productGroupId
       ? await db.select().from(productGroups).where(eq(productGroups.id, material.productGroupId))
       : [null];
-    const thicknesses = await db.select().from(materialThicknesses).where(eq(materialThicknesses.materialId, id));
+    const sizes = await db.select().from(materialSizes).where(eq(materialSizes.materialId, id));
 
     return {
       ...material,
@@ -204,17 +204,17 @@ export class DatabaseStorage implements IStorage {
       manufacturer: manufacturer || null,
       colorRange: colorRange || null,
       productGroup: productGroup || null,
-      thicknesses,
+      sizes,
     };
   }
 
-  async createMaterial(data: InsertMaterial, thicknesses?: { thickness: string }[]): Promise<MaterialWithRelations> {
+  async createMaterial(data: InsertMaterial, sizes?: { width: string; length: string; thickness: string }[]): Promise<MaterialWithRelations> {
     const [material] = await db.insert(materials).values(data).returning();
     
-    let createdThicknesses: MaterialThickness[] = [];
-    if (thicknesses && thicknesses.length > 0) {
-      createdThicknesses = await db.insert(materialThicknesses)
-        .values(thicknesses.map(t => ({ materialId: material.id, ...t })))
+    let createdSizes: MaterialSize[] = [];
+    if (sizes && sizes.length > 0) {
+      createdSizes = await db.insert(materialSizes)
+        .values(sizes.map(s => ({ materialId: material.id, ...s })))
         .returning();
     }
 
@@ -224,19 +224,19 @@ export class DatabaseStorage implements IStorage {
       manufacturer: null,
       colorRange: null,
       productGroup: null,
-      thicknesses: createdThicknesses,
+      sizes: createdSizes,
     };
   }
 
-  async updateMaterial(id: number, data: Partial<InsertMaterial>, thicknesses?: { thickness: string }[]): Promise<MaterialWithRelations | undefined> {
+  async updateMaterial(id: number, data: Partial<InsertMaterial>, sizes?: { width: string; length: string; thickness: string }[]): Promise<MaterialWithRelations | undefined> {
     const [material] = await db.update(materials).set(data).where(eq(materials.id, id)).returning();
     if (!material) return undefined;
 
-    if (thicknesses !== undefined) {
-      await db.delete(materialThicknesses).where(eq(materialThicknesses.materialId, id));
-      if (thicknesses.length > 0) {
-        await db.insert(materialThicknesses)
-          .values(thicknesses.map(t => ({ materialId: id, ...t })));
+    if (sizes !== undefined) {
+      await db.delete(materialSizes).where(eq(materialSizes.materialId, id));
+      if (sizes.length > 0) {
+        await db.insert(materialSizes)
+          .values(sizes.map(s => ({ materialId: id, ...s })));
       }
     }
 
