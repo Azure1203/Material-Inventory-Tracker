@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { getCostLevelDisplay, getCostLevelColor } from "@/lib/utils";
 import { MaterialDialog } from "@/components/MaterialDialog";
+import { MaterialDetailDialog } from "@/components/MaterialDetailDialog";
 import { Plus, Search, Edit, Trash2, ExternalLink, Package, Filter, X } from "lucide-react";
 import type { MaterialWithRelations, Supplier, Manufacturer, ProductGroup } from "@shared/schema";
 
@@ -25,6 +26,8 @@ export default function Materials() {
   const [editingMaterial, setEditingMaterial] = useState<MaterialWithRelations | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [materialToDelete, setMaterialToDelete] = useState<MaterialWithRelations | null>(null);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [viewingMaterial, setViewingMaterial] = useState<MaterialWithRelations | null>(null);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -107,6 +110,16 @@ export default function Materials() {
 
   const handleAddNew = () => {
     setEditingMaterial(null);
+    setDialogOpen(true);
+  };
+
+  const handleRowClick = (material: MaterialWithRelations) => {
+    setViewingMaterial(material);
+    setDetailDialogOpen(true);
+  };
+
+  const handleEditFromDetail = (material: MaterialWithRelations) => {
+    setEditingMaterial(material);
     setDialogOpen(true);
   };
 
@@ -228,7 +241,12 @@ export default function Materials() {
                 </TableHeader>
                 <TableBody>
                   {filteredMaterials.map(material => (
-                    <TableRow key={material.id} data-testid={`material-row-${material.id}`}>
+                    <TableRow 
+                      key={material.id} 
+                      data-testid={`material-row-${material.id}`}
+                      className="cursor-pointer hover-elevate"
+                      onClick={() => handleRowClick(material)}
+                    >
                       <TableCell>
                         {material.imageUrl ? (
                           <img 
@@ -303,7 +321,7 @@ export default function Materials() {
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            onClick={() => handleEdit(material)}
+                            onClick={(e) => { e.stopPropagation(); handleEdit(material); }}
                             data-testid={`button-edit-${material.id}`}
                           >
                             <Edit className="h-4 w-4" />
@@ -311,7 +329,7 @@ export default function Materials() {
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            onClick={() => handleDelete(material)}
+                            onClick={(e) => { e.stopPropagation(); handleDelete(material); }}
                             data-testid={`button-delete-${material.id}`}
                           >
                             <Trash2 className="h-4 w-4 text-destructive" />
@@ -331,6 +349,16 @@ export default function Materials() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         material={editingMaterial}
+      />
+
+      <MaterialDetailDialog
+        open={detailDialogOpen}
+        onOpenChange={(open) => {
+          setDetailDialogOpen(open);
+          if (!open) setViewingMaterial(null);
+        }}
+        material={viewingMaterial}
+        onEdit={handleEditFromDetail}
       />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
