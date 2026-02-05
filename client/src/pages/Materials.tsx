@@ -302,7 +302,9 @@ export default function Materials() {
                         <div className="flex flex-col">
                           <div className="flex items-center gap-2">
                             <span className="font-medium">
-                              {material.productCode ? `${material.productCode} ${material.name}` : material.name}
+                              {material.productCode && !material.name.startsWith(material.productCode) 
+                                ? `${material.productCode} ${material.name}` 
+                                : material.name}
                             </span>
                             {material.websiteUrl && (
                               <a 

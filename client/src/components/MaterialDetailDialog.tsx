@@ -28,7 +28,9 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
           <div className="flex items-start justify-between gap-4">
             <div>
               <DialogTitle className="text-xl" data-testid="text-material-title">
-                {material.productCode ? `${material.productCode} - ${material.name}` : material.name}
+                {material.productCode && !material.name.startsWith(material.productCode) 
+                  ? `${material.productCode} - ${material.name}` 
+                  : material.name}
               </DialogTitle>
               <p className="text-sm text-muted-foreground mt-1" data-testid="text-material-subtitle">
                 {[material.finish, material.colorRange?.name].filter(Boolean).join(" • ")}

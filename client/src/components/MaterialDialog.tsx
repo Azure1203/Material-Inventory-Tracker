@@ -66,21 +66,57 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
   const form = useForm<MaterialFormData>({
     resolver: zodResolver(materialFormSchema),
     defaultValues: {
-      name: material?.name || "",
-      productCode: material?.productCode || "",
-      finish: material?.finish || "",
-      inStock: material?.inStock ?? true,
-      costLevel: material?.costLevel || 1,
-      supplierId: material?.supplierId || null,
-      manufacturerId: material?.manufacturerId || null,
-      colorRangeId: material?.colorRangeId || null,
-      productGroupId: material?.productGroupId || null,
-      imageUrl: material?.imageUrl || "",
-      websiteUrl: material?.websiteUrl || "",
-      notes: material?.notes || "",
+      name: "",
+      productCode: "",
+      finish: "",
+      inStock: true,
+      costLevel: 1,
+      supplierId: null,
+      manufacturerId: null,
+      colorRangeId: null,
+      productGroupId: null,
+      imageUrl: "",
+      websiteUrl: "",
+      notes: "",
       sizes: [],
     },
   });
+
+  useEffect(() => {
+    if (material) {
+      form.reset({
+        name: material.name || "",
+        productCode: material.productCode || "",
+        finish: material.finish || "",
+        inStock: material.inStock ?? true,
+        costLevel: material.costLevel || 1,
+        supplierId: material.supplierId || null,
+        manufacturerId: material.manufacturerId || null,
+        colorRangeId: material.colorRangeId || null,
+        productGroupId: material.productGroupId || null,
+        imageUrl: material.imageUrl || "",
+        websiteUrl: material.websiteUrl || "",
+        notes: material.notes || "",
+        sizes: [],
+      });
+    } else {
+      form.reset({
+        name: "",
+        productCode: "",
+        finish: "",
+        inStock: true,
+        costLevel: 1,
+        supplierId: null,
+        manufacturerId: null,
+        colorRangeId: null,
+        productGroupId: null,
+        imageUrl: "",
+        websiteUrl: "",
+        notes: "",
+        sizes: [],
+      });
+    }
+  }, [material, form]);
 
   const createMutation = useMutation({
     mutationFn: async (data: MaterialFormData) => {
