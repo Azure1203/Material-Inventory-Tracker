@@ -15,7 +15,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Plus, Edit, Trash2, Palette, Loader2 } from "lucide-react";
+import { Plus, Edit, Trash2, Palette, Loader2, ArrowRight } from "lucide-react";
+import { useLocation } from "wouter";
 import { insertColorRangeSchema, type ColorRange, type Manufacturer, type InsertColorRange } from "@shared/schema";
 
 const colorRangeFormSchema = insertColorRangeSchema.extend({
@@ -32,6 +33,7 @@ export default function ColorRanges() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [colorRangeToDelete, setColorRangeToDelete] = useState<ColorRangeWithManufacturer | null>(null);
 
+  const [, navigate] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -150,22 +152,39 @@ export default function ColorRanges() {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Manufacturer</TableHead>
+                  <TableHead>Materials</TableHead>
                   <TableHead className="w-[100px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {colorRanges?.map(colorRange => (
-                  <TableRow key={colorRange.id} data-testid={`color-range-row-${colorRange.id}`}>
+                  <TableRow 
+                    key={colorRange.id} 
+                    data-testid={`color-range-row-${colorRange.id}`}
+                    className="cursor-pointer hover-elevate"
+                    onClick={() => navigate(`/materials?colorRange=${colorRange.id}`)}
+                  >
                     <TableCell className="font-medium">{colorRange.name}</TableCell>
                     <TableCell>
                       <Badge variant="secondary">{colorRange.manufacturer?.name || "Unknown"}</Badge>
                     </TableCell>
                     <TableCell>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); navigate(`/materials?colorRange=${colorRange.id}`); }}
+                        data-testid={`button-view-materials-${colorRange.id}`}
+                      >
+                        View Materials
+                        <ArrowRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </TableCell>
+                    <TableCell>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(colorRange)} data-testid={`button-edit-${colorRange.id}`}>
+                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleEdit(colorRange); }} data-testid={`button-edit-${colorRange.id}`}>
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => { setColorRangeToDelete(colorRange); setDeleteDialogOpen(true); }} data-testid={`button-delete-${colorRange.id}`}>
+                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setColorRangeToDelete(colorRange); setDeleteDialogOpen(true); }} data-testid={`button-delete-${colorRange.id}`}>
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>

@@ -27,6 +27,7 @@ export default function Materials() {
   const [manufacturerFilter, setManufacturerFilter] = useState<string>(urlParams.get("manufacturer") || "all");
   const [productGroupFilter, setProductGroupFilter] = useState<string>(urlParams.get("productGroup") || "all");
   const [costFilter, setCostFilter] = useState<string>(urlParams.get("cost") || "all");
+  const [colorRangeFilter, setColorRangeFilter] = useState<string>(urlParams.get("colorRange") || "all");
 
   useEffect(() => {
     const params = new URLSearchParams(searchString);
@@ -34,10 +35,12 @@ export default function Materials() {
     const cost = params.get("cost");
     const supplier = params.get("supplier");
     const manufacturer = params.get("manufacturer");
+    const colorRange = params.get("colorRange");
     if (pg) setProductGroupFilter(pg);
     if (cost) setCostFilter(cost);
     if (supplier) setSupplierFilter(supplier);
     if (manufacturer) setManufacturerFilter(manufacturer);
+    if (colorRange) setColorRangeFilter(colorRange);
   }, [searchString]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState<MaterialWithRelations | null>(null);
@@ -101,10 +104,11 @@ export default function Materials() {
       const matchesManufacturer = manufacturerFilter === "all" || material.manufacturerId === parseInt(manufacturerFilter);
       const matchesProductGroup = productGroupFilter === "all" || material.productGroupId === parseInt(productGroupFilter);
       const matchesCost = costFilter === "all" || material.costLevel === parseInt(costFilter);
+      const matchesColorRange = colorRangeFilter === "all" || material.colorRangeId === parseInt(colorRangeFilter);
 
-      return matchesSearch && matchesStock && matchesSupplier && matchesManufacturer && matchesProductGroup && matchesCost;
+      return matchesSearch && matchesStock && matchesSupplier && matchesManufacturer && matchesProductGroup && matchesCost && matchesColorRange;
     });
-  }, [materials, searchQuery, stockFilter, supplierFilter, manufacturerFilter, productGroupFilter, costFilter]);
+  }, [materials, searchQuery, stockFilter, supplierFilter, manufacturerFilter, productGroupFilter, costFilter, colorRangeFilter]);
 
   const clearFilters = () => {
     setSearchQuery("");
@@ -113,9 +117,10 @@ export default function Materials() {
     setManufacturerFilter("all");
     setProductGroupFilter("all");
     setCostFilter("all");
+    setColorRangeFilter("all");
   };
 
-  const hasFilters = searchQuery || stockFilter !== "all" || supplierFilter !== "all" || manufacturerFilter !== "all" || productGroupFilter !== "all" || costFilter !== "all";
+  const hasFilters = searchQuery || stockFilter !== "all" || supplierFilter !== "all" || manufacturerFilter !== "all" || productGroupFilter !== "all" || costFilter !== "all" || colorRangeFilter !== "all";
 
   const handleEdit = (material: MaterialWithRelations) => {
     setEditingMaterial(material);

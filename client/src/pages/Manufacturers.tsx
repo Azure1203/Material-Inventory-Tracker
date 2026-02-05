@@ -12,7 +12,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Plus, Edit, Trash2, Factory, Loader2, ExternalLink } from "lucide-react";
+import { Plus, Edit, Trash2, Factory, Loader2, ExternalLink, ArrowRight } from "lucide-react";
+import { useLocation } from "wouter";
 import { insertManufacturerSchema, type Manufacturer, type InsertManufacturer } from "@shared/schema";
 
 const manufacturerFormSchema = insertManufacturerSchema.extend({
@@ -27,6 +28,7 @@ export default function Manufacturers() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [manufacturerToDelete, setManufacturerToDelete] = useState<Manufacturer | null>(null);
 
+  const [, navigate] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -141,12 +143,18 @@ export default function Manufacturers() {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Website</TableHead>
+                  <TableHead>Materials</TableHead>
                   <TableHead className="w-[100px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {manufacturers?.map(manufacturer => (
-                  <TableRow key={manufacturer.id} data-testid={`manufacturer-row-${manufacturer.id}`}>
+                  <TableRow 
+                    key={manufacturer.id} 
+                    data-testid={`manufacturer-row-${manufacturer.id}`}
+                    className="cursor-pointer hover-elevate"
+                    onClick={() => navigate(`/materials?manufacturer=${manufacturer.id}`)}
+                  >
                     <TableCell className="font-medium">{manufacturer.name}</TableCell>
                     <TableCell>
                       {manufacturer.websiteUrl ? (
@@ -155,6 +163,7 @@ export default function Manufacturers() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-1 text-primary hover:underline text-sm"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           <ExternalLink className="h-3 w-3" />
                           Visit
@@ -164,11 +173,22 @@ export default function Manufacturers() {
                       )}
                     </TableCell>
                     <TableCell>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); navigate(`/materials?manufacturer=${manufacturer.id}`); }}
+                        data-testid={`button-view-materials-${manufacturer.id}`}
+                      >
+                        View Materials
+                        <ArrowRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </TableCell>
+                    <TableCell>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(manufacturer)} data-testid={`button-edit-${manufacturer.id}`}>
+                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleEdit(manufacturer); }} data-testid={`button-edit-${manufacturer.id}`}>
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => { setManufacturerToDelete(manufacturer); setDeleteDialogOpen(true); }} data-testid={`button-delete-${manufacturer.id}`}>
+                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setManufacturerToDelete(manufacturer); setDeleteDialogOpen(true); }} data-testid={`button-delete-${manufacturer.id}`}>
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>

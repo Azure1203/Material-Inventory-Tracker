@@ -12,7 +12,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Plus, Edit, Trash2, Building2, Loader2 } from "lucide-react";
+import { Plus, Edit, Trash2, Building2, Loader2, ArrowRight } from "lucide-react";
+import { useLocation } from "wouter";
 import { insertSupplierSchema, type Supplier, type InsertSupplier } from "@shared/schema";
 
 const supplierFormSchema = insertSupplierSchema.extend({
@@ -27,6 +28,7 @@ export default function Suppliers() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [supplierToDelete, setSupplierToDelete] = useState<Supplier | null>(null);
 
+  const [, navigate] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -139,19 +141,36 @@ export default function Suppliers() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
+                  <TableHead>Materials</TableHead>
                   <TableHead className="w-[100px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {suppliers?.map(supplier => (
-                  <TableRow key={supplier.id} data-testid={`supplier-row-${supplier.id}`}>
+                  <TableRow 
+                    key={supplier.id} 
+                    data-testid={`supplier-row-${supplier.id}`}
+                    className="cursor-pointer hover-elevate"
+                    onClick={() => navigate(`/materials?supplier=${supplier.id}`)}
+                  >
                     <TableCell className="font-medium">{supplier.name}</TableCell>
                     <TableCell>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); navigate(`/materials?supplier=${supplier.id}`); }}
+                        data-testid={`button-view-materials-${supplier.id}`}
+                      >
+                        View Materials
+                        <ArrowRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </TableCell>
+                    <TableCell>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(supplier)} data-testid={`button-edit-${supplier.id}`}>
+                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleEdit(supplier); }} data-testid={`button-edit-${supplier.id}`}>
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => { setSupplierToDelete(supplier); setDeleteDialogOpen(true); }} data-testid={`button-delete-${supplier.id}`}>
+                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setSupplierToDelete(supplier); setDeleteDialogOpen(true); }} data-testid={`button-delete-${supplier.id}`}>
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
