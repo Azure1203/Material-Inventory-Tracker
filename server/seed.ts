@@ -108,13 +108,13 @@ export async function seedDatabase() {
 
   // Add thickness variations for some materials
   const thicknessData = createdMaterials.slice(0, 15).flatMap(m => [
-    { materialId: m.id, thickness: '5/8"', inStock: true },
-    { materialId: m.id, thickness: '3/4"', inStock: true },
+    { materialId: m.id, thickness: '5/8"' },
+    { materialId: m.id, thickness: '3/4"' },
   ]);
 
   // Add 1" thickness to some materials
   thicknessData.push(
-    ...createdMaterials.slice(0, 5).map(m => ({ materialId: m.id, thickness: '1"', inStock: Math.random() > 0.3 }))
+    ...createdMaterials.slice(0, 5).map(m => ({ materialId: m.id, thickness: '1"' }))
   );
 
   await db.insert(materialThicknesses).values(thicknessData);

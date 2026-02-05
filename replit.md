@@ -74,6 +74,8 @@ The schema defines a hierarchical structure:
 - **Stock Item** (`inStock: true`): A regularly stocked material that is always available
 - **Non-Stock** (`inStock: false`): A special order material that must be ordered when needed
 - This is a permanent classification, not a temporary inventory status
+- **No "out of stock" concept**: This is a material catalog, not inventory tracking
+- **Thickness options**: Materials can have multiple thickness options (e.g., 5/8", 3/4", 1") - these are just available sizes with no individual stock status
 
 ### Technical Notes
 - SelectItem components cannot use empty string values due to Radix Select requirements. Use "all" or similar non-empty placeholder values for "All items" options.

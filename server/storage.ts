@@ -43,8 +43,8 @@ export interface IStorage {
   // Materials
   getMaterials(): Promise<MaterialWithRelations[]>;
   getMaterial(id: number): Promise<MaterialWithRelations | undefined>;
-  createMaterial(data: InsertMaterial, thicknesses?: { thickness: string; inStock: boolean }[]): Promise<MaterialWithRelations>;
-  updateMaterial(id: number, data: Partial<InsertMaterial>, thicknesses?: { thickness: string; inStock: boolean }[]): Promise<MaterialWithRelations | undefined>;
+  createMaterial(data: InsertMaterial, thicknesses?: { thickness: string }[]): Promise<MaterialWithRelations>;
+  updateMaterial(id: number, data: Partial<InsertMaterial>, thicknesses?: { thickness: string }[]): Promise<MaterialWithRelations | undefined>;
   deleteMaterial(id: number): Promise<boolean>;
 }
 
@@ -208,7 +208,7 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async createMaterial(data: InsertMaterial, thicknesses?: { thickness: string; inStock: boolean }[]): Promise<MaterialWithRelations> {
+  async createMaterial(data: InsertMaterial, thicknesses?: { thickness: string }[]): Promise<MaterialWithRelations> {
     const [material] = await db.insert(materials).values(data).returning();
     
     let createdThicknesses: MaterialThickness[] = [];
@@ -228,7 +228,7 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async updateMaterial(id: number, data: Partial<InsertMaterial>, thicknesses?: { thickness: string; inStock: boolean }[]): Promise<MaterialWithRelations | undefined> {
+  async updateMaterial(id: number, data: Partial<InsertMaterial>, thicknesses?: { thickness: string }[]): Promise<MaterialWithRelations | undefined> {
     const [material] = await db.update(materials).set(data).where(eq(materials.id, id)).returning();
     if (!material) return undefined;
 

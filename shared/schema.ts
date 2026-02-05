@@ -114,7 +114,6 @@ export const materialThicknesses = pgTable("material_thicknesses", {
   id: serial("id").primaryKey(),
   materialId: integer("material_id").notNull().references(() => materials.id, { onDelete: "cascade" }),
   thickness: text("thickness").notNull(), // e.g., "5/8\"", "3/4\"", "1\""
-  inStock: boolean("in_stock").notNull().default(true),
 });
 
 export const materialThicknessesRelations = relations(materialThicknesses, ({ one }) => ({
@@ -131,7 +130,6 @@ export type MaterialThickness = typeof materialThicknesses.$inferSelect;
 // Schema for thickness array validation (used in material create/update)
 export const thicknessInputSchema = z.object({
   thickness: z.string().min(1, "Thickness is required"),
-  inStock: z.boolean().default(true),
 });
 export const thicknessArraySchema = z.array(thicknessInputSchema).optional();
 export type ThicknessInput = z.infer<typeof thicknessInputSchema>;

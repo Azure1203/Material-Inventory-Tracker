@@ -32,8 +32,8 @@ interface MaterialDialogProps {
 export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [thicknesses, setThicknesses] = useState<{ thickness: string; inStock: boolean }[]>(
-    material?.thicknesses?.map(t => ({ thickness: t.thickness, inStock: t.inStock })) || []
+  const [thicknesses, setThicknesses] = useState<{ thickness: string }[]>(
+    material?.thicknesses?.map(t => ({ thickness: t.thickness })) || []
   );
   const [newThickness, setNewThickness] = useState("");
 
@@ -115,19 +115,13 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
 
   const addThickness = () => {
     if (newThickness.trim()) {
-      setThicknesses([...thicknesses, { thickness: newThickness.trim(), inStock: true }]);
+      setThicknesses([...thicknesses, { thickness: newThickness.trim() }]);
       setNewThickness("");
     }
   };
 
   const removeThickness = (index: number) => {
     setThicknesses(thicknesses.filter((_, i) => i !== index));
-  };
-
-  const toggleThicknessStock = (index: number) => {
-    setThicknesses(thicknesses.map((t, i) => 
-      i === index ? { ...t, inStock: !t.inStock } : t
-    ));
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -380,22 +374,10 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
                   {thicknesses.map((t, index) => (
                     <div 
                       key={index} 
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-md border ${
-                        t.inStock ? "bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800" : "bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800"
-                      }`}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-md border bg-muted/50"
                       data-testid={`thickness-${index}`}
                     >
                       <span className="text-sm font-medium">{t.thickness}</span>
-                      <button
-                        type="button"
-                        onClick={() => toggleThicknessStock(index)}
-                        className={`text-xs px-1.5 py-0.5 rounded ${
-                          t.inStock ? "bg-green-200 text-green-800 dark:bg-green-800 dark:text-green-200" : "bg-red-200 text-red-800 dark:bg-red-800 dark:text-red-200"
-                        }`}
-                        data-testid={`toggle-thickness-${index}`}
-                      >
-                        {t.inStock ? "In Stock" : "Out"}
-                      </button>
                       <button
                         type="button"
                         onClick={() => removeThickness(index)}
