@@ -55,12 +55,12 @@ export default function ColorRanges() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/color-ranges"] });
-      toast({ title: "Color range created successfully" });
+      toast({ title: "Color collection created successfully" });
       setDialogOpen(false);
       form.reset();
     },
     onError: () => {
-      toast({ title: "Failed to create color range", variant: "destructive" });
+      toast({ title: "Failed to create color collection", variant: "destructive" });
     },
   });
 
@@ -71,12 +71,12 @@ export default function ColorRanges() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/color-ranges"] });
-      toast({ title: "Color range updated successfully" });
+      toast({ title: "Color collection updated successfully" });
       setDialogOpen(false);
       setEditingColorRange(null);
     },
     onError: () => {
-      toast({ title: "Failed to update color range", variant: "destructive" });
+      toast({ title: "Failed to update color collection", variant: "destructive" });
     },
   });
 
@@ -86,12 +86,12 @@ export default function ColorRanges() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/color-ranges"] });
-      toast({ title: "Color range deleted successfully" });
+      toast({ title: "Color collection deleted successfully" });
       setDeleteDialogOpen(false);
       setColorRangeToDelete(null);
     },
     onError: () => {
-      toast({ title: "Failed to delete color range", variant: "destructive" });
+      toast({ title: "Failed to delete color collection", variant: "destructive" });
     },
   });
 
@@ -122,12 +122,12 @@ export default function ColorRanges() {
     <div className="p-6 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Color Ranges</h1>
-          <p className="text-muted-foreground">Manage manufacturer color ranges</p>
+          <h1 className="text-2xl font-bold">Color Collections</h1>
+          <p className="text-muted-foreground">Manage manufacturer color collections</p>
         </div>
-        <Button onClick={handleAddNew} data-testid="button-add-color-range">
+        <Button onClick={handleAddNew} data-testid="button-add-color-collection">
           <Plus className="h-4 w-4 mr-2" />
-          Add Color Range
+          Add Color Collection
         </Button>
       </div>
 
@@ -142,7 +142,7 @@ export default function ColorRanges() {
           ) : colorRanges?.length === 0 ? (
             <div className="text-center py-12">
               <Palette className="h-12 w-12 mx-auto text-muted-foreground opacity-50 mb-3" />
-              <p className="text-muted-foreground">No color ranges yet. Add your first color range!</p>
+              <p className="text-muted-foreground">No color collections yet. Add your first color collection!</p>
             </div>
           ) : (
             <Table>
@@ -181,7 +181,7 @@ export default function ColorRanges() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingColorRange ? "Edit Color Range" : "Add Color Range"}</DialogTitle>
+            <DialogTitle>{editingColorRange ? "Edit Color Collection" : "Add Color Collection"}</DialogTitle>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -192,7 +192,7 @@ export default function ColorRanges() {
                   <FormItem>
                     <FormLabel>Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Color range name" {...field} data-testid="input-color-range-name" />
+                      <Input placeholder="Color collection name" {...field} data-testid="input-color-collection-name" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -235,9 +235,9 @@ export default function ColorRanges() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Color Range</AlertDialogTitle>
+            <AlertDialogTitle>Delete Color Collection</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{colorRangeToDelete?.name}"? Materials using this color range will no longer have a color range assigned.
+              Are you sure you want to delete "{colorRangeToDelete?.name}"? Materials using this color collection will no longer have a color collection assigned.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

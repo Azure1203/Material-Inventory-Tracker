@@ -38,7 +38,7 @@ const manageItems = [
     icon: Factory,
   },
   {
-    title: "Color Ranges",
+    title: "Color Collections",
     url: "/color-ranges",
     icon: Palette,
   },

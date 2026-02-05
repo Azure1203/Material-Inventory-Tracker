@@ -231,7 +231,7 @@ export default function Manufacturers() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Manufacturer</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{manufacturerToDelete?.name}"? This will also remove associated color ranges.
+              Are you sure you want to delete "{manufacturerToDelete?.name}"? This will also remove associated color collections.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

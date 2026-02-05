@@ -69,7 +69,7 @@ export default function Dashboard() {
       bgColor: "bg-purple-100 dark:bg-purple-900/30",
     },
     {
-      title: "Color Ranges",
+      title: "Color Collections",
       value: colorRanges?.length || 0,
       icon: Palette,
       color: "text-orange-600 dark:text-orange-400",

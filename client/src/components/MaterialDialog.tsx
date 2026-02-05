@@ -285,14 +285,14 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
                 name="colorRangeId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Color Range</FormLabel>
+                    <FormLabel>Color Collection</FormLabel>
                     <Select 
                       value={field.value ? String(field.value) : ""} 
                       onValueChange={(val) => field.onChange(val ? parseInt(val) : null)}
                     >
                       <FormControl>
-                        <SelectTrigger data-testid="select-color-range">
-                          <SelectValue placeholder="Select color range" />
+                        <SelectTrigger data-testid="select-color-collection">
+                          <SelectValue placeholder="Select color collection" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
