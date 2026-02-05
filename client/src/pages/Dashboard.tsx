@@ -30,7 +30,6 @@ export default function Dashboard() {
 
   const totalMaterials = materials?.length || 0;
   const stockCount = materials?.filter(m => m.inStock).length || 0;
-  const nonStockCount = totalMaterials - stockCount;
 
   const stats = [
     {
@@ -46,13 +45,6 @@ export default function Dashboard() {
       icon: CheckCircle,
       color: "text-green-600 dark:text-green-400",
       bgColor: "bg-green-100 dark:bg-green-900/30",
-    },
-    {
-      title: "Non-Stock",
-      value: nonStockCount,
-      icon: XCircle,
-      color: "text-amber-600 dark:text-amber-400",
-      bgColor: "bg-amber-100 dark:bg-amber-900/30",
     },
     {
       title: "Suppliers",
