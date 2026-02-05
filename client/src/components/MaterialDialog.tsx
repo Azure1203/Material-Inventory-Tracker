@@ -477,14 +477,14 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
               render={({ field }) => (
                 <FormItem className="flex items-center justify-between rounded-lg border p-3">
                   <div>
-                    <FormLabel className="text-base">In Stock</FormLabel>
-                    <p className="text-sm text-muted-foreground">Is this material currently available?</p>
+                    <FormLabel className="text-base">Stock Item</FormLabel>
+                    <p className="text-sm text-muted-foreground">Is this a regularly stocked material? (Non-stock items are special order)</p>
                   </div>
                   <FormControl>
                     <Switch
                       checked={field.value}
                       onCheckedChange={field.onChange}
-                      data-testid="switch-in-stock"
+                      data-testid="switch-stock-item"
                     />
                   </FormControl>
                 </FormItem>

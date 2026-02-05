@@ -29,8 +29,8 @@ export default function Dashboard() {
   const isLoading = materialsLoading || suppliersLoading || manufacturersLoading || colorRangesLoading || productGroupsLoading;
 
   const totalMaterials = materials?.length || 0;
-  const inStockCount = materials?.filter(m => m.inStock).length || 0;
-  const outOfStockCount = totalMaterials - inStockCount;
+  const stockCount = materials?.filter(m => m.inStock).length || 0;
+  const nonStockCount = totalMaterials - stockCount;
 
   const stats = [
     {
@@ -41,18 +41,18 @@ export default function Dashboard() {
       bgColor: "bg-primary/10",
     },
     {
-      title: "In Stock",
-      value: inStockCount,
+      title: "Stock Items",
+      value: stockCount,
       icon: CheckCircle,
       color: "text-green-600 dark:text-green-400",
       bgColor: "bg-green-100 dark:bg-green-900/30",
     },
     {
-      title: "Out of Stock",
-      value: outOfStockCount,
+      title: "Non-Stock",
+      value: nonStockCount,
       icon: XCircle,
-      color: "text-red-600 dark:text-red-400",
-      bgColor: "bg-red-100 dark:bg-red-900/30",
+      color: "text-amber-600 dark:text-amber-400",
+      bgColor: "bg-amber-100 dark:bg-amber-900/30",
     },
     {
       title: "Suppliers",
@@ -77,7 +77,7 @@ export default function Dashboard() {
     },
   ];
 
-  const recentOutOfStock = materials?.filter(m => !m.inStock).slice(0, 5) || [];
+  const nonStockItems = materials?.filter(m => !m.inStock).slice(0, 5) || [];
   const materialsByGroup = productGroups?.map(group => ({
     ...group,
     count: materials?.filter(m => m.productGroupId === group.id).length || 0,
@@ -119,8 +119,8 @@ export default function Dashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <XCircle className="h-4 w-4 text-red-500" />
-              Out of Stock Items
+              <XCircle className="h-4 w-4 text-amber-500" />
+              Non-Stock Items (Special Order)
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -130,22 +130,22 @@ export default function Dashboard() {
                   <Skeleton key={i} className="h-12 w-full" />
                 ))}
               </div>
-            ) : recentOutOfStock.length === 0 ? (
+            ) : nonStockItems.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <CheckCircle className="h-12 w-12 mx-auto mb-2 text-green-500 opacity-50" />
-                <p>All materials are in stock!</p>
+                <p>All materials are stock items!</p>
               </div>
             ) : (
               <div className="space-y-2">
-                {recentOutOfStock.map(material => (
-                  <div key={material.id} className="flex items-center justify-between p-3 rounded-md bg-muted/50" data-testid={`out-of-stock-${material.id}`}>
+                {nonStockItems.map(material => (
+                  <div key={material.id} className="flex items-center justify-between p-3 rounded-md bg-muted/50" data-testid={`non-stock-${material.id}`}>
                     <div>
                       <p className="font-medium text-sm">{material.name}</p>
                       <p className="text-xs text-muted-foreground">
                         {material.manufacturer?.name || "Unknown manufacturer"}
                       </p>
                     </div>
-                    <Badge variant="destructive" className="text-xs">Out of Stock</Badge>
+                    <Badge variant="secondary" className="text-xs">Non-Stock</Badge>
                   </div>
                 ))}
               </div>

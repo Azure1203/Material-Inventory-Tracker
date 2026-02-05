@@ -17,10 +17,10 @@ import type { MaterialWithRelations, Supplier, Manufacturer, ProductGroup } from
 
 export default function Materials() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [stockFilter, setStockFilter] = useState<"all" | "in-stock" | "out-of-stock">("all");
-  const [supplierFilter, setSupplierFilter] = useState<string>("");
-  const [manufacturerFilter, setManufacturerFilter] = useState<string>("");
-  const [productGroupFilter, setProductGroupFilter] = useState<string>("");
+  const [stockFilter, setStockFilter] = useState<"all" | "stock" | "non-stock">("all");
+  const [supplierFilter, setSupplierFilter] = useState<string>("all");
+  const [manufacturerFilter, setManufacturerFilter] = useState<string>("all");
+  const [productGroupFilter, setProductGroupFilter] = useState<string>("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState<MaterialWithRelations | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -74,12 +74,12 @@ export default function Materials() {
         material.colorRange?.name.toLowerCase().includes(searchLower);
 
       const matchesStock = stockFilter === "all" ||
-        (stockFilter === "in-stock" && material.inStock) ||
-        (stockFilter === "out-of-stock" && !material.inStock);
+        (stockFilter === "stock" && material.inStock) ||
+        (stockFilter === "non-stock" && !material.inStock);
 
-      const matchesSupplier = !supplierFilter || material.supplierId === parseInt(supplierFilter);
-      const matchesManufacturer = !manufacturerFilter || material.manufacturerId === parseInt(manufacturerFilter);
-      const matchesProductGroup = !productGroupFilter || material.productGroupId === parseInt(productGroupFilter);
+      const matchesSupplier = supplierFilter === "all" || material.supplierId === parseInt(supplierFilter);
+      const matchesManufacturer = manufacturerFilter === "all" || material.manufacturerId === parseInt(manufacturerFilter);
+      const matchesProductGroup = productGroupFilter === "all" || material.productGroupId === parseInt(productGroupFilter);
 
       return matchesSearch && matchesStock && matchesSupplier && matchesManufacturer && matchesProductGroup;
     });
@@ -88,12 +88,12 @@ export default function Materials() {
   const clearFilters = () => {
     setSearchQuery("");
     setStockFilter("all");
-    setSupplierFilter("");
-    setManufacturerFilter("");
-    setProductGroupFilter("");
+    setSupplierFilter("all");
+    setManufacturerFilter("all");
+    setProductGroupFilter("all");
   };
 
-  const hasFilters = searchQuery || stockFilter !== "all" || supplierFilter || manufacturerFilter || productGroupFilter;
+  const hasFilters = searchQuery || stockFilter !== "all" || supplierFilter !== "all" || manufacturerFilter !== "all" || productGroupFilter !== "all";
 
   const handleEdit = (material: MaterialWithRelations) => {
     setEditingMaterial(material);
@@ -139,12 +139,12 @@ export default function Materials() {
             <div className="flex flex-wrap gap-2">
               <Select value={stockFilter} onValueChange={(val) => setStockFilter(val as typeof stockFilter)}>
                 <SelectTrigger className="w-[140px]" data-testid="filter-stock">
-                  <SelectValue placeholder="Stock status" />
+                  <SelectValue placeholder="Stock type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Stock</SelectItem>
-                  <SelectItem value="in-stock">In Stock</SelectItem>
-                  <SelectItem value="out-of-stock">Out of Stock</SelectItem>
+                  <SelectItem value="all">All Materials</SelectItem>
+                  <SelectItem value="stock">Stock Items</SelectItem>
+                  <SelectItem value="non-stock">Non-Stock</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -153,7 +153,7 @@ export default function Materials() {
                   <SelectValue placeholder="Supplier" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Suppliers</SelectItem>
+                  <SelectItem value="all">All Suppliers</SelectItem>
                   {suppliers?.map(s => (
                     <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
                   ))}
@@ -165,7 +165,7 @@ export default function Materials() {
                   <SelectValue placeholder="Manufacturer" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Manufacturers</SelectItem>
+                  <SelectItem value="all">All Manufacturers</SelectItem>
                   {manufacturers?.map(m => (
                     <SelectItem key={m.id} value={String(m.id)}>{m.name}</SelectItem>
                   ))}
@@ -177,7 +177,7 @@ export default function Materials() {
                   <SelectValue placeholder="Product Group" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Groups</SelectItem>
+                  <SelectItem value="all">All Groups</SelectItem>
                   {productGroups?.map(pg => (
                     <SelectItem key={pg.id} value={String(pg.id)}>{pg.name}</SelectItem>
                   ))}
@@ -223,7 +223,7 @@ export default function Materials() {
                     <TableHead>Size</TableHead>
                     <TableHead>Thicknesses</TableHead>
                     <TableHead>Cost</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>Type</TableHead>
                     <TableHead className="w-[100px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -300,8 +300,8 @@ export default function Materials() {
                         </span>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={material.inStock ? "default" : "destructive"}>
-                          {material.inStock ? "In Stock" : "Out of Stock"}
+                        <Badge variant={material.inStock ? "default" : "secondary"}>
+                          {material.inStock ? "Stock" : "Non-Stock"}
                         </Badge>
                       </TableCell>
                       <TableCell>
