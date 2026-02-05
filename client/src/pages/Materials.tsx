@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSearch } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,12 +18,27 @@ import { Plus, Search, Edit, Trash2, ExternalLink, Package, Filter, X } from "lu
 import type { MaterialWithRelations, Supplier, Manufacturer, ProductGroup } from "@shared/schema";
 
 export default function Materials() {
+  const searchString = useSearch();
+  const urlParams = new URLSearchParams(searchString);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [stockFilter, setStockFilter] = useState<"all" | "stock" | "non-stock">("all");
-  const [supplierFilter, setSupplierFilter] = useState<string>("all");
-  const [manufacturerFilter, setManufacturerFilter] = useState<string>("all");
-  const [productGroupFilter, setProductGroupFilter] = useState<string>("all");
-  const [costFilter, setCostFilter] = useState<string>("all");
+  const [supplierFilter, setSupplierFilter] = useState<string>(urlParams.get("supplier") || "all");
+  const [manufacturerFilter, setManufacturerFilter] = useState<string>(urlParams.get("manufacturer") || "all");
+  const [productGroupFilter, setProductGroupFilter] = useState<string>(urlParams.get("productGroup") || "all");
+  const [costFilter, setCostFilter] = useState<string>(urlParams.get("cost") || "all");
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchString);
+    const pg = params.get("productGroup");
+    const cost = params.get("cost");
+    const supplier = params.get("supplier");
+    const manufacturer = params.get("manufacturer");
+    if (pg) setProductGroupFilter(pg);
+    if (cost) setCostFilter(cost);
+    if (supplier) setSupplierFilter(supplier);
+    if (manufacturer) setManufacturerFilter(manufacturer);
+  }, [searchString]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState<MaterialWithRelations | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
