@@ -260,8 +260,8 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
                   <FormItem>
                     <FormLabel>Supplier</FormLabel>
                     <Select 
-                      value={field.value ? String(field.value) : ""} 
-                      onValueChange={(val) => field.onChange(val ? parseInt(val) : null)}
+                      value={field.value ? String(field.value) : "none"} 
+                      onValueChange={(val) => field.onChange(val === "none" ? null : parseInt(val))}
                     >
                       <FormControl>
                         <SelectTrigger data-testid="select-supplier">
@@ -269,6 +269,7 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
                         {suppliers?.map(s => (
                           <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
                         ))}
@@ -285,9 +286,9 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
                   <FormItem>
                     <FormLabel>Manufacturer</FormLabel>
                     <Select 
-                      value={field.value ? String(field.value) : ""} 
+                      value={field.value ? String(field.value) : "none"} 
                       onValueChange={(val) => {
-                        field.onChange(val ? parseInt(val) : null);
+                        field.onChange(val === "none" ? null : parseInt(val));
                         form.setValue("colorRangeId", null);
                       }}
                     >
@@ -297,6 +298,7 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
                         {manufacturers?.map(m => (
                           <SelectItem key={m.id} value={String(m.id)}>{m.name}</SelectItem>
                         ))}
@@ -316,8 +318,8 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
                   <FormItem>
                     <FormLabel>Color Collection</FormLabel>
                     <Select 
-                      value={field.value ? String(field.value) : ""} 
-                      onValueChange={(val) => field.onChange(val ? parseInt(val) : null)}
+                      value={field.value ? String(field.value) : "none"} 
+                      onValueChange={(val) => field.onChange(val === "none" ? null : parseInt(val))}
                     >
                       <FormControl>
                         <SelectTrigger data-testid="select-color-collection">
@@ -325,6 +327,7 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
                         {filteredColorRanges?.map(cr => (
                           <SelectItem key={cr.id} value={String(cr.id)}>{cr.name}</SelectItem>
                         ))}
@@ -341,8 +344,8 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
                   <FormItem>
                     <FormLabel>Product Group</FormLabel>
                     <Select 
-                      value={field.value ? String(field.value) : ""} 
-                      onValueChange={(val) => field.onChange(val ? parseInt(val) : null)}
+                      value={field.value ? String(field.value) : "none"} 
+                      onValueChange={(val) => field.onChange(val === "none" ? null : parseInt(val))}
                     >
                       <FormControl>
                         <SelectTrigger data-testid="select-product-group">
@@ -350,6 +353,7 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
                         {productGroups?.map(pg => (
                           <SelectItem key={pg.id} value={String(pg.id)}>{pg.name}</SelectItem>
                         ))}
