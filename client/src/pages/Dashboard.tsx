@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Package, Building2, Factory, Palette, Layers, DollarSign } from "lucide-react";
+import { Package, Building2, Factory, Palette, Layers, DollarSign, Info } from "lucide-react";
 import { getCostLevelDisplay, getCostLevelColor } from "@/lib/utils";
 import type { MaterialWithRelations, Supplier, Manufacturer, ColorRange, ProductGroup } from "@shared/schema";
 
@@ -86,6 +86,11 @@ export default function Dashboard() {
       <div>
         <h1 className="text-2xl font-bold" data-testid="text-dashboard-title">Dashboard</h1>
         <p className="text-muted-foreground">Overview of your material inventory</p>
+      </div>
+
+      <div className="flex items-center gap-2 rounded-md border px-4 py-2 text-sm text-muted-foreground" data-testid="notice-cost-guideline">
+        <Info className="h-4 w-4 shrink-0" />
+        <span>Cost category is meant to serve as a guideline only.</span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -14,7 +14,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { getCostLevelDisplay, getCostLevelColor } from "@/lib/utils";
 import { MaterialDialog } from "@/components/MaterialDialog";
 import { MaterialDetailDialog } from "@/components/MaterialDetailDialog";
-import { Plus, Search, Edit, Trash2, ExternalLink, Package, Filter, X } from "lucide-react";
+import { Plus, Search, Edit, Trash2, ExternalLink, Package, Filter, X, Info } from "lucide-react";
 import type { MaterialWithRelations, Supplier, Manufacturer, ProductGroup } from "@shared/schema";
 
 export default function Materials() {
@@ -157,6 +157,11 @@ export default function Materials() {
           <Plus className="h-4 w-4 mr-2" />
           Add Material
         </Button>
+      </div>
+
+      <div className="flex items-center gap-2 rounded-md border px-4 py-2 text-sm text-muted-foreground" data-testid="notice-cost-guideline">
+        <Info className="h-4 w-4 shrink-0" />
+        <span>Cost category is meant to serve as a guideline only.</span>
       </div>
 
       <Card>
