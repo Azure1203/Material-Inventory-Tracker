@@ -70,7 +70,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteSupplier(id: number): Promise<boolean> {
-    const result = await db.delete(suppliers).where(eq(suppliers.id, id));
+    await db.update(materials).set({ supplierId: null }).where(eq(materials.supplierId, id));
+    await db.delete(suppliers).where(eq(suppliers.id, id));
     return true;
   }
 
@@ -95,6 +96,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteManufacturer(id: number): Promise<boolean> {
+    const relatedColorRanges = await db.select({ id: colorRanges.id }).from(colorRanges).where(eq(colorRanges.manufacturerId, id));
+    for (const cr of relatedColorRanges) {
+      await db.update(materials).set({ colorRangeId: null }).where(eq(materials.colorRangeId, cr.id));
+    }
+    await db.update(materials).set({ manufacturerId: null }).where(eq(materials.manufacturerId, id));
+    await db.delete(colorRanges).where(eq(colorRanges.manufacturerId, id));
     await db.delete(manufacturers).where(eq(manufacturers.id, id));
     return true;
   }
@@ -127,6 +134,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteColorRange(id: number): Promise<boolean> {
+    await db.update(materials).set({ colorRangeId: null }).where(eq(materials.colorRangeId, id));
     await db.delete(colorRanges).where(eq(colorRanges.id, id));
     return true;
   }
@@ -152,6 +160,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteProductGroup(id: number): Promise<boolean> {
+    await db.update(materials).set({ productGroupId: null }).where(eq(materials.productGroupId, id));
     await db.delete(productGroups).where(eq(productGroups.id, id));
     return true;
   }
