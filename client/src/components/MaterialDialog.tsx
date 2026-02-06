@@ -11,7 +11,9 @@ import { Switch } from "@/components/ui/switch";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Loader2, Plus, X, ExternalLink } from "lucide-react";
+import { Loader2, Plus, X, ExternalLink, Check } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
 import { insertMaterialWithSizesSchema, type MaterialWithRelations, type Supplier, type Manufacturer, type ColorRange, type ProductGroup, type InsertMaterialWithSizes } from "@shared/schema";
 import { useState, useEffect } from "react";
 import { useUpload } from "@/hooks/use-upload";
@@ -33,6 +35,7 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [sizes, setSizes] = useState<{ width: string; length: string; thickness: string }[]>([]);
+  const [selectedProductGroupIds, setSelectedProductGroupIds] = useState<number[]>([]);
   const [newWidth, setNewWidth] = useState("");
   const [newLength, setNewLength] = useState("");
   const [newThickness, setNewThickness] = useState("");
@@ -43,6 +46,7 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
     } else {
       setSizes([]);
     }
+    setSelectedProductGroupIds(material?.productGroups?.map(pg => pg.id) || []);
     setNewWidth("");
     setNewLength("");
     setNewThickness("");
@@ -73,11 +77,11 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
       supplierId: null,
       manufacturerId: null,
       colorRangeId: null,
-      productGroupId: null,
       imageUrl: "",
       websiteUrl: "",
       notes: "",
       sizes: [],
+      productGroupIds: [],
     },
   });
 
@@ -91,11 +95,11 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
         supplierId: material.supplierId || null,
         manufacturerId: material.manufacturerId || null,
         colorRangeId: material.colorRangeId || null,
-        productGroupId: material.productGroupId || null,
         imageUrl: material.imageUrl || "",
         websiteUrl: material.websiteUrl || "",
         notes: material.notes || "",
         sizes: [],
+        productGroupIds: material.productGroups?.map(pg => pg.id) || [],
       });
     } else {
       form.reset({
@@ -106,18 +110,18 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
         supplierId: null,
         manufacturerId: null,
         colorRangeId: null,
-        productGroupId: null,
         imageUrl: "",
         websiteUrl: "",
         notes: "",
         sizes: [],
+        productGroupIds: [],
       });
     }
   }, [material, form]);
 
   const createMutation = useMutation({
     mutationFn: async (data: MaterialFormData) => {
-      const response = await apiRequest("POST", "/api/materials", { ...data, sizes });
+      const response = await apiRequest("POST", "/api/materials", { ...data, sizes, productGroupIds: selectedProductGroupIds });
       return response.json();
     },
     onSuccess: () => {
@@ -126,6 +130,7 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
       onOpenChange(false);
       form.reset();
       setSizes([]);
+      setSelectedProductGroupIds([]);
     },
     onError: () => {
       toast({ title: "Failed to create material", variant: "destructive" });
@@ -134,7 +139,7 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
 
   const updateMutation = useMutation({
     mutationFn: async (data: MaterialFormData) => {
-      const response = await apiRequest("PATCH", `/api/materials/${material?.id}`, { ...data, sizes });
+      const response = await apiRequest("PATCH", `/api/materials/${material?.id}`, { ...data, sizes, productGroupIds: selectedProductGroupIds });
       return response.json();
     },
     onSuccess: () => {
@@ -337,32 +342,66 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="productGroupId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Product Group</FormLabel>
-                    <Select 
-                      value={field.value ? String(field.value) : "none"} 
-                      onValueChange={(val) => field.onChange(val === "none" ? null : parseInt(val))}
+              <div>
+                <FormLabel>Product Groups</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start font-normal mt-2"
+                      data-testid="select-product-groups"
                     >
-                      <FormControl>
-                        <SelectTrigger data-testid="select-product-group">
-                          <SelectValue placeholder="Select product group" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="none">None</SelectItem>
-                        {productGroups?.map(pg => (
-                          <SelectItem key={pg.id} value={String(pg.id)}>{pg.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
+                      {selectedProductGroupIds.length === 0
+                        ? "Select product groups..."
+                        : `${selectedProductGroupIds.length} selected`}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[240px] p-2" align="start">
+                    {productGroups?.map(pg => {
+                      const isSelected = selectedProductGroupIds.includes(pg.id);
+                      return (
+                        <button
+                          key={pg.id}
+                          type="button"
+                          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover-elevate"
+                          onClick={() => {
+                            setSelectedProductGroupIds(prev =>
+                              isSelected
+                                ? prev.filter(id => id !== pg.id)
+                                : [...prev, pg.id]
+                            );
+                          }}
+                          data-testid={`checkbox-product-group-${pg.id}`}
+                        >
+                          <div className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border ${isSelected ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground"}`}>
+                            {isSelected && <Check className="h-3 w-3" />}
+                          </div>
+                          <span>{pg.name}</span>
+                        </button>
+                      );
+                    })}
+                  </PopoverContent>
+                </Popover>
+                {selectedProductGroupIds.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {selectedProductGroupIds.map(pgId => {
+                      const pg = productGroups?.find(p => p.id === pgId);
+                      return pg ? (
+                        <Badge key={pg.id} variant="secondary" className="text-xs" data-testid={`badge-product-group-${pg.id}`}>
+                          {pg.name}
+                          <button
+                            type="button"
+                            className="ml-1"
+                            onClick={() => setSelectedProductGroupIds(prev => prev.filter(id => id !== pg.id))}
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ) : null;
+                    })}
+                  </div>
                 )}
-              />
+              </div>
             </div>
 
             <div className="space-y-2">

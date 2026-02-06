@@ -106,7 +106,21 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
             <DetailItem label="Manufacturer" value={material.manufacturer?.name} testId="text-manufacturer" />
             <DetailItem label="Supplier" value={material.supplier?.name} testId="text-supplier" />
             <DetailItem label="Color Collection" value={material.colorRange?.name} testId="text-color-collection" />
-            <DetailItem label="Product Group" value={material.productGroup?.name} testId="text-product-group" />
+            <DetailItem 
+              label="Product Groups" 
+              value={
+                material.productGroups && material.productGroups.length > 0
+                  ? <div className="flex flex-wrap gap-1" data-testid="container-product-groups">
+                      {material.productGroups.map(pg => (
+                        <Badge key={pg.id} variant="secondary" className="text-xs" data-testid={`badge-product-group-${pg.id}`}>
+                          {pg.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  : null
+              }
+              testId="text-product-group" 
+            />
           </div>
 
           {material.sizes && material.sizes.length > 0 && (

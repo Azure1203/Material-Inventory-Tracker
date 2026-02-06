@@ -71,7 +71,7 @@ export default function Dashboard() {
 
   const materialsByGroup = productGroups?.map(group => ({
     ...group,
-    count: materials?.filter(m => m.productGroupId === group.id).length || 0,
+    count: materials?.filter(m => m.productGroups?.some(pg => pg.id === group.id)).length || 0,
   })) || [];
 
   const materialsByCost = [1, 2, 3, 4, 5].map(level => ({

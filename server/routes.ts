@@ -213,8 +213,8 @@ export async function registerRoutes(
   app.post("/api/materials", async (req, res) => {
     try {
       const parsed = insertMaterialWithSizesSchema.parse(req.body);
-      const { sizes, ...materialData } = parsed;
-      const material = await storage.createMaterial(materialData, sizes);
+      const { sizes, productGroupIds, ...materialData } = parsed;
+      const material = await storage.createMaterial(materialData, sizes, productGroupIds);
       res.json(material);
     } catch (error) {
       console.error("Create material error:", error);
@@ -226,8 +226,8 @@ export async function registerRoutes(
     try {
       const id = parseInt(req.params.id);
       const parsed = insertMaterialWithSizesSchema.partial().parse(req.body);
-      const { sizes, ...materialData } = parsed;
-      const material = await storage.updateMaterial(id, materialData, sizes);
+      const { sizes, productGroupIds, ...materialData } = parsed;
+      const material = await storage.updateMaterial(id, materialData, sizes, productGroupIds);
       if (!material) {
         return res.status(404).json({ error: "Material not found" });
       }

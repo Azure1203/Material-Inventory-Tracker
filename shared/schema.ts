@@ -59,7 +59,7 @@ export const productGroups = pgTable("product_groups", {
 });
 
 export const productGroupsRelations = relations(productGroups, ({ many }) => ({
-  materials: many(materials),
+  materialProductGroups: many(materialProductGroups),
 }));
 
 export const insertProductGroupSchema = createInsertSchema(productGroups).omit({ id: true });
@@ -76,7 +76,6 @@ export const materials = pgTable("materials", {
   supplierId: integer("supplier_id").references(() => suppliers.id),
   manufacturerId: integer("manufacturer_id").references(() => manufacturers.id),
   colorRangeId: integer("color_range_id").references(() => colorRanges.id),
-  productGroupId: integer("product_group_id").references(() => productGroups.id),
   imageUrl: text("image_url"),
   websiteUrl: text("website_url"),
   notes: text("notes"),
@@ -95,10 +94,7 @@ export const materialsRelations = relations(materials, ({ one, many }) => ({
     fields: [materials.colorRangeId],
     references: [colorRanges.id],
   }),
-  productGroup: one(productGroups, {
-    fields: [materials.productGroupId],
-    references: [productGroups.id],
-  }),
+  materialProductGroups: many(materialProductGroups),
   sizes: many(materialSizes),
 }));
 
@@ -126,6 +122,26 @@ export const insertMaterialSizeSchema = createInsertSchema(materialSizes).omit({
 export type InsertMaterialSize = z.infer<typeof insertMaterialSizeSchema>;
 export type MaterialSize = typeof materialSizes.$inferSelect;
 
+// Material-ProductGroup junction table (many-to-many)
+export const materialProductGroups = pgTable("material_product_groups", {
+  id: serial("id").primaryKey(),
+  materialId: integer("material_id").notNull().references(() => materials.id, { onDelete: "cascade" }),
+  productGroupId: integer("product_group_id").notNull().references(() => productGroups.id, { onDelete: "cascade" }),
+});
+
+export const materialProductGroupsRelations = relations(materialProductGroups, ({ one }) => ({
+  material: one(materials, {
+    fields: [materialProductGroups.materialId],
+    references: [materials.id],
+  }),
+  productGroup: one(productGroups, {
+    fields: [materialProductGroups.productGroupId],
+    references: [productGroups.id],
+  }),
+}));
+
+export type MaterialProductGroup = typeof materialProductGroups.$inferSelect;
+
 // Schema for size array validation (used in material create/update)
 export const sizeInputSchema = z.object({
   width: z.string().min(1, "Width is required"),
@@ -135,9 +151,10 @@ export const sizeInputSchema = z.object({
 export const sizeArraySchema = z.array(sizeInputSchema).optional();
 export type SizeInput = z.infer<typeof sizeInputSchema>;
 
-// Extended material schema with sizes for create/update operations
+// Extended material schema with sizes and product group IDs for create/update operations
 export const insertMaterialWithSizesSchema = insertMaterialSchema.extend({
   sizes: sizeArraySchema,
+  productGroupIds: z.array(z.number()).optional(),
 });
 export type InsertMaterialWithSizes = z.infer<typeof insertMaterialWithSizesSchema>;
 
@@ -146,7 +163,7 @@ export type MaterialWithRelations = Material & {
   supplier?: Supplier | null;
   manufacturer?: Manufacturer | null;
   colorRange?: ColorRange | null;
-  productGroup?: ProductGroup | null;
+  productGroups: ProductGroup[];
   sizes: MaterialSize[];
 };
 

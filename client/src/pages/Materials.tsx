@@ -101,7 +101,7 @@ export default function Materials() {
 
       const matchesSupplier = supplierFilter === "all" || material.supplierId === parseInt(supplierFilter);
       const matchesManufacturer = manufacturerFilter === "all" || material.manufacturerId === parseInt(manufacturerFilter);
-      const matchesProductGroup = productGroupFilter === "all" || material.productGroupId === parseInt(productGroupFilter);
+      const matchesProductGroup = productGroupFilter === "all" || material.productGroups?.some(pg => pg.id === parseInt(productGroupFilter));
       const matchesCost = costFilter === "all" || material.costLevel === parseInt(costFilter);
       const matchesColorRange = colorRangeFilter === "all" || material.colorRangeId === parseInt(colorRangeFilter);
 

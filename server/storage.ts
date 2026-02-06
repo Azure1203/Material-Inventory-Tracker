@@ -1,5 +1,5 @@
 import { 
-  suppliers, materials, manufacturers, colorRanges, productGroups, materialSizes,
+  suppliers, materials, manufacturers, colorRanges, productGroups, materialSizes, materialProductGroups,
   type Supplier, type InsertSupplier,
   type Manufacturer, type InsertManufacturer,
   type ColorRange, type InsertColorRange,
@@ -9,7 +9,7 @@ import {
   type MaterialWithRelations
 } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // Suppliers
@@ -43,8 +43,8 @@ export interface IStorage {
   // Materials
   getMaterials(): Promise<MaterialWithRelations[]>;
   getMaterial(id: number): Promise<MaterialWithRelations | undefined>;
-  createMaterial(data: InsertMaterial, sizes?: { width: string; length: string; thickness: string }[]): Promise<MaterialWithRelations>;
-  updateMaterial(id: number, data: Partial<InsertMaterial>, sizes?: { width: string; length: string; thickness: string }[]): Promise<MaterialWithRelations | undefined>;
+  createMaterial(data: InsertMaterial, sizes?: { width: string; length: string; thickness: string }[], productGroupIds?: number[]): Promise<MaterialWithRelations>;
+  updateMaterial(id: number, data: Partial<InsertMaterial>, sizes?: { width: string; length: string; thickness: string }[], productGroupIds?: number[]): Promise<MaterialWithRelations | undefined>;
   deleteMaterial(id: number): Promise<boolean>;
 }
 
@@ -160,7 +160,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteProductGroup(id: number): Promise<boolean> {
-    await db.update(materials).set({ productGroupId: null }).where(eq(materials.productGroupId, id));
+    await db.delete(materialProductGroups).where(eq(materialProductGroups.productGroupId, id));
     await db.delete(productGroups).where(eq(productGroups.id, id));
     return true;
   }
@@ -173,6 +173,7 @@ export class DatabaseStorage implements IStorage {
     const colorRangeList = await db.select().from(colorRanges);
     const productGroupList = await db.select().from(productGroups);
     const sizeList = await db.select().from(materialSizes);
+    const mpgList = await db.select().from(materialProductGroups);
 
     const supplierMap = new Map(supplierList.map(s => [s.id, s]));
     const manufacturerMap = new Map(manufacturerList.map(m => [m.id, m]));
@@ -184,7 +185,10 @@ export class DatabaseStorage implements IStorage {
       supplier: m.supplierId ? supplierMap.get(m.supplierId) || null : null,
       manufacturer: m.manufacturerId ? manufacturerMap.get(m.manufacturerId) || null : null,
       colorRange: m.colorRangeId ? colorRangeMap.get(m.colorRangeId) || null : null,
-      productGroup: m.productGroupId ? productGroupMap.get(m.productGroupId) || null : null,
+      productGroups: mpgList
+        .filter(mpg => mpg.materialId === m.id)
+        .map(mpg => productGroupMap.get(mpg.productGroupId))
+        .filter((pg): pg is NonNullable<typeof pg> => pg != null),
       sizes: sizeList.filter(s => s.materialId === m.id),
     }));
   }
@@ -202,22 +206,25 @@ export class DatabaseStorage implements IStorage {
     const [colorRange] = material.colorRangeId
       ? await db.select().from(colorRanges).where(eq(colorRanges.id, material.colorRangeId))
       : [null];
-    const [productGroup] = material.productGroupId
-      ? await db.select().from(productGroups).where(eq(productGroups.id, material.productGroupId))
-      : [null];
     const sizes = await db.select().from(materialSizes).where(eq(materialSizes.materialId, id));
+    
+    const mpgRows = await db.select().from(materialProductGroups).where(eq(materialProductGroups.materialId, id));
+    const pgIds = mpgRows.map(r => r.productGroupId);
+    const materialPGs = pgIds.length > 0
+      ? await db.select().from(productGroups).where(inArray(productGroups.id, pgIds))
+      : [];
 
     return {
       ...material,
       supplier: supplier || null,
       manufacturer: manufacturer || null,
       colorRange: colorRange || null,
-      productGroup: productGroup || null,
+      productGroups: materialPGs,
       sizes,
     };
   }
 
-  async createMaterial(data: InsertMaterial, sizes?: { width: string; length: string; thickness: string }[]): Promise<MaterialWithRelations> {
+  async createMaterial(data: InsertMaterial, sizes?: { width: string; length: string; thickness: string }[], productGroupIds?: number[]): Promise<MaterialWithRelations> {
     const [material] = await db.insert(materials).values(data).returning();
     
     let createdSizes: MaterialSize[] = [];
@@ -227,17 +234,15 @@ export class DatabaseStorage implements IStorage {
         .returning();
     }
 
-    return {
-      ...material,
-      supplier: null,
-      manufacturer: null,
-      colorRange: null,
-      productGroup: null,
-      sizes: createdSizes,
-    };
+    if (productGroupIds && productGroupIds.length > 0) {
+      await db.insert(materialProductGroups)
+        .values(productGroupIds.map(pgId => ({ materialId: material.id, productGroupId: pgId })));
+    }
+
+    return this.getMaterial(material.id) as Promise<MaterialWithRelations>;
   }
 
-  async updateMaterial(id: number, data: Partial<InsertMaterial>, sizes?: { width: string; length: string; thickness: string }[]): Promise<MaterialWithRelations | undefined> {
+  async updateMaterial(id: number, data: Partial<InsertMaterial>, sizes?: { width: string; length: string; thickness: string }[], productGroupIds?: number[]): Promise<MaterialWithRelations | undefined> {
     const [material] = await db.update(materials).set(data).where(eq(materials.id, id)).returning();
     if (!material) return undefined;
 
@@ -246,6 +251,14 @@ export class DatabaseStorage implements IStorage {
       if (sizes.length > 0) {
         await db.insert(materialSizes)
           .values(sizes.map(s => ({ materialId: id, ...s })));
+      }
+    }
+
+    if (productGroupIds !== undefined) {
+      await db.delete(materialProductGroups).where(eq(materialProductGroups.materialId, id));
+      if (productGroupIds.length > 0) {
+        await db.insert(materialProductGroups)
+          .values(productGroupIds.map(pgId => ({ materialId: id, productGroupId: pgId })));
       }
     }
 
