@@ -15,6 +15,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Plus, Edit, Trash2, Building2, Loader2, ArrowRight } from "lucide-react";
 import { useLocation } from "wouter";
 import { insertSupplierSchema, type Supplier, type InsertSupplier } from "@shared/schema";
+import { useAdminAuth } from "@/lib/adminAuth";
 
 const supplierFormSchema = insertSupplierSchema.extend({
   name: insertSupplierSchema.shape.name.min(1, "Name is required"),
@@ -31,6 +32,7 @@ export default function Suppliers() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { isAdmin } = useAdminAuth();
 
   const { data: suppliers, isLoading } = useQuery<Supplier[]>({
     queryKey: ["/api/suppliers"],
@@ -117,10 +119,12 @@ export default function Suppliers() {
           <h1 className="text-2xl font-bold">Suppliers</h1>
           <p className="text-muted-foreground">Manage your material suppliers/distributors</p>
         </div>
-        <Button onClick={handleAddNew} data-testid="button-add-supplier">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Supplier
-        </Button>
+        {isAdmin && (
+          <Button onClick={handleAddNew} data-testid="button-add-supplier">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Supplier
+          </Button>
+        )}
       </div>
 
       <Card>
@@ -142,7 +146,7 @@ export default function Suppliers() {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Materials</TableHead>
-                  <TableHead className="w-[100px]">Actions</TableHead>
+                  {isAdmin && <TableHead className="w-[100px]">Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -165,16 +169,18 @@ export default function Suppliers() {
                         <ArrowRight className="h-4 w-4 ml-1" />
                       </Button>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleEdit(supplier); }} data-testid={`button-edit-${supplier.id}`}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setSupplierToDelete(supplier); setDeleteDialogOpen(true); }} data-testid={`button-delete-${supplier.id}`}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </TableCell>
+                    {isAdmin && (
+                      <TableCell>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleEdit(supplier); }} data-testid={`button-edit-${supplier.id}`}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setSupplierToDelete(supplier); setDeleteDialogOpen(true); }} data-testid={`button-delete-${supplier.id}`}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>

@@ -16,6 +16,7 @@ import { MaterialDialog } from "@/components/MaterialDialog";
 import { MaterialDetailDialog } from "@/components/MaterialDetailDialog";
 import { Plus, Search, Edit, Trash2, ExternalLink, Package, Filter, X, Info } from "lucide-react";
 import type { MaterialWithRelations, Supplier, Manufacturer, ProductGroup } from "@shared/schema";
+import { useAdminAuth } from "@/lib/adminAuth";
 
 export default function Materials() {
   const searchString = useSearch();
@@ -51,6 +52,7 @@ export default function Materials() {
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { isAdmin } = useAdminAuth();
 
   const { data: materials, isLoading } = useQuery<MaterialWithRelations[]>({
     queryKey: ["/api/materials"],
@@ -153,10 +155,12 @@ export default function Materials() {
           <h1 className="text-2xl font-bold">Materials</h1>
           <p className="text-muted-foreground">Manage your material inventory</p>
         </div>
-        <Button onClick={handleAddNew} data-testid="button-add-material">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Material
-        </Button>
+        {isAdmin && (
+          <Button onClick={handleAddNew} data-testid="button-add-material">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Material
+          </Button>
+        )}
       </div>
 
       <div className="flex items-center gap-2 rounded-md border px-4 py-2 text-sm text-muted-foreground" data-testid="notice-cost-guideline">
@@ -278,7 +282,7 @@ export default function Materials() {
                     <TableHead>Size Options</TableHead>
                     <TableHead>Cost</TableHead>
                     <TableHead>Type</TableHead>
-                    <TableHead className="w-[100px]">Actions</TableHead>
+                    {isAdmin && <TableHead className="w-[100px]">Actions</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -360,26 +364,28 @@ export default function Materials() {
                           {material.inStock ? "Stock" : "Non-Stock"}
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            onClick={(e) => { e.stopPropagation(); handleEdit(material); }}
-                            data-testid={`button-edit-${material.id}`}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            onClick={(e) => { e.stopPropagation(); handleDelete(material); }}
-                            data-testid={`button-delete-${material.id}`}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </TableCell>
+                      {isAdmin && (
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={(e) => { e.stopPropagation(); handleEdit(material); }}
+                              data-testid={`button-edit-${material.id}`}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={(e) => { e.stopPropagation(); handleDelete(material); }}
+                              data-testid={`button-delete-${material.id}`}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))}
                 </TableBody>
@@ -402,7 +408,7 @@ export default function Materials() {
           if (!open) setViewingMaterial(null);
         }}
         material={viewingMaterial}
-        onEdit={handleEditFromDetail}
+        onEdit={isAdmin ? handleEditFromDetail : undefined}
       />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

@@ -15,6 +15,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Plus, Edit, Trash2, Factory, Loader2, ExternalLink, ArrowRight } from "lucide-react";
 import { useLocation } from "wouter";
 import { insertManufacturerSchema, type Manufacturer, type InsertManufacturer } from "@shared/schema";
+import { useAdminAuth } from "@/lib/adminAuth";
 
 const manufacturerFormSchema = insertManufacturerSchema.extend({
   name: insertManufacturerSchema.shape.name.min(1, "Name is required"),
@@ -31,6 +32,7 @@ export default function Manufacturers() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { isAdmin } = useAdminAuth();
 
   const { data: manufacturers, isLoading } = useQuery<Manufacturer[]>({
     queryKey: ["/api/manufacturers"],
@@ -118,10 +120,12 @@ export default function Manufacturers() {
           <h1 className="text-2xl font-bold">Manufacturers</h1>
           <p className="text-muted-foreground">Manage material manufacturers</p>
         </div>
-        <Button onClick={handleAddNew} data-testid="button-add-manufacturer">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Manufacturer
-        </Button>
+        {isAdmin && (
+          <Button onClick={handleAddNew} data-testid="button-add-manufacturer">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Manufacturer
+          </Button>
+        )}
       </div>
 
       <Card>
@@ -144,7 +148,7 @@ export default function Manufacturers() {
                   <TableHead>Name</TableHead>
                   <TableHead>Website</TableHead>
                   <TableHead>Materials</TableHead>
-                  <TableHead className="w-[100px]">Actions</TableHead>
+                  {isAdmin && <TableHead className="w-[100px]">Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -183,16 +187,18 @@ export default function Manufacturers() {
                         <ArrowRight className="h-4 w-4 ml-1" />
                       </Button>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleEdit(manufacturer); }} data-testid={`button-edit-${manufacturer.id}`}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setManufacturerToDelete(manufacturer); setDeleteDialogOpen(true); }} data-testid={`button-delete-${manufacturer.id}`}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </TableCell>
+                    {isAdmin && (
+                      <TableCell>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleEdit(manufacturer); }} data-testid={`button-edit-${manufacturer.id}`}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setManufacturerToDelete(manufacturer); setDeleteDialogOpen(true); }} data-testid={`button-delete-${manufacturer.id}`}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
@@ -228,7 +234,7 @@ export default function Manufacturers() {
                   <FormItem>
                     <FormLabel>Website URL</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://..." {...field} data-testid="input-manufacturer-website" />
+                      <Input placeholder="https://..." {...field} value={field.value || ""} data-testid="input-manufacturer-website" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

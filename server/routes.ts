@@ -1,8 +1,15 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertSupplierSchema, insertManufacturerSchema, insertColorRangeSchema, insertProductGroupSchema, insertMaterialWithSizesSchema } from "@shared/schema";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
+
+function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  if (!req.session?.isAdmin) {
+    return res.status(401).json({ error: "Admin access required" });
+  }
+  next();
+}
 
 export async function registerRoutes(
   httpServer: Server,
@@ -10,6 +17,29 @@ export async function registerRoutes(
 ): Promise<Server> {
   // Register object storage routes for image uploads
   registerObjectStorageRoutes(app);
+
+  // Auth API
+  app.post("/api/auth/login", (req, res) => {
+    const { password } = req.body;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+    if (!adminPassword) {
+      return res.status(500).json({ error: "Admin password not configured" });
+    }
+    if (password === adminPassword) {
+      req.session.isAdmin = true;
+      return res.json({ success: true });
+    }
+    return res.status(401).json({ error: "Invalid password" });
+  });
+
+  app.post("/api/auth/logout", (req, res) => {
+    req.session.isAdmin = false;
+    res.json({ success: true });
+  });
+
+  app.get("/api/auth/status", (req, res) => {
+    res.json({ isAdmin: !!req.session?.isAdmin });
+  });
 
   // Suppliers API
   app.get("/api/suppliers", async (req, res) => {
@@ -21,7 +51,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/suppliers", async (req, res) => {
+  app.post("/api/suppliers", requireAdmin, async (req, res) => {
     try {
       const data = insertSupplierSchema.parse(req.body);
       const supplier = await storage.createSupplier(data);
@@ -31,7 +61,7 @@ export async function registerRoutes(
     }
   });
 
-  app.patch("/api/suppliers/:id", async (req, res) => {
+  app.patch("/api/suppliers/:id", requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const data = insertSupplierSchema.partial().parse(req.body);
@@ -45,7 +75,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete("/api/suppliers/:id", async (req, res) => {
+  app.delete("/api/suppliers/:id", requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteSupplier(id);
@@ -65,7 +95,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/manufacturers", async (req, res) => {
+  app.post("/api/manufacturers", requireAdmin, async (req, res) => {
     try {
       const data = insertManufacturerSchema.parse(req.body);
       const manufacturer = await storage.createManufacturer(data);
@@ -75,7 +105,7 @@ export async function registerRoutes(
     }
   });
 
-  app.patch("/api/manufacturers/:id", async (req, res) => {
+  app.patch("/api/manufacturers/:id", requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const data = insertManufacturerSchema.partial().parse(req.body);
@@ -89,7 +119,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete("/api/manufacturers/:id", async (req, res) => {
+  app.delete("/api/manufacturers/:id", requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteManufacturer(id);
@@ -109,7 +139,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/color-ranges", async (req, res) => {
+  app.post("/api/color-ranges", requireAdmin, async (req, res) => {
     try {
       const data = insertColorRangeSchema.parse(req.body);
       const colorRange = await storage.createColorRange(data);
@@ -119,7 +149,7 @@ export async function registerRoutes(
     }
   });
 
-  app.patch("/api/color-ranges/:id", async (req, res) => {
+  app.patch("/api/color-ranges/:id", requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const data = insertColorRangeSchema.partial().parse(req.body);
@@ -133,7 +163,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete("/api/color-ranges/:id", async (req, res) => {
+  app.delete("/api/color-ranges/:id", requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteColorRange(id);
@@ -153,7 +183,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/product-groups", async (req, res) => {
+  app.post("/api/product-groups", requireAdmin, async (req, res) => {
     try {
       const data = insertProductGroupSchema.parse(req.body);
       const productGroup = await storage.createProductGroup(data);
@@ -163,7 +193,7 @@ export async function registerRoutes(
     }
   });
 
-  app.patch("/api/product-groups/:id", async (req, res) => {
+  app.patch("/api/product-groups/:id", requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const data = insertProductGroupSchema.partial().parse(req.body);
@@ -177,7 +207,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete("/api/product-groups/:id", async (req, res) => {
+  app.delete("/api/product-groups/:id", requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteProductGroup(id);
@@ -210,7 +240,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/materials", async (req, res) => {
+  app.post("/api/materials", requireAdmin, async (req, res) => {
     try {
       const parsed = insertMaterialWithSizesSchema.parse(req.body);
       const { sizes, productGroupIds, ...materialData } = parsed;
@@ -222,7 +252,7 @@ export async function registerRoutes(
     }
   });
 
-  app.patch("/api/materials/:id", async (req, res) => {
+  app.patch("/api/materials/:id", requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const parsed = insertMaterialWithSizesSchema.partial().parse(req.body);
@@ -238,7 +268,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete("/api/materials/:id", async (req, res) => {
+  app.delete("/api/materials/:id", requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteMaterial(id);

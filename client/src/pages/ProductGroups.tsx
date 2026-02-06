@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Plus, Edit, Trash2, Layers, Loader2 } from "lucide-react";
 import { insertProductGroupSchema, type ProductGroup, type InsertProductGroup } from "@shared/schema";
+import { useAdminAuth } from "@/lib/adminAuth";
 
 const productGroupFormSchema = insertProductGroupSchema.extend({
   name: insertProductGroupSchema.shape.name.min(1, "Name is required"),
@@ -29,6 +30,7 @@ export default function ProductGroups() {
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { isAdmin } = useAdminAuth();
 
   const { data: productGroups, isLoading } = useQuery<ProductGroup[]>({
     queryKey: ["/api/product-groups"],
@@ -115,10 +117,12 @@ export default function ProductGroups() {
           <h1 className="text-2xl font-bold">Product Groups</h1>
           <p className="text-muted-foreground">Manage product group categories</p>
         </div>
-        <Button onClick={handleAddNew} data-testid="button-add-product-group">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Product Group
-        </Button>
+        {isAdmin && (
+          <Button onClick={handleAddNew} data-testid="button-add-product-group">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Product Group
+          </Button>
+        )}
       </div>
 
       <Card>
@@ -139,23 +143,25 @@ export default function ProductGroups() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
-                  <TableHead className="w-[100px]">Actions</TableHead>
+                  {isAdmin && <TableHead className="w-[100px]">Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {productGroups?.map(productGroup => (
                   <TableRow key={productGroup.id} data-testid={`product-group-row-${productGroup.id}`}>
                     <TableCell className="font-medium">{productGroup.name}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(productGroup)} data-testid={`button-edit-${productGroup.id}`}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => { setProductGroupToDelete(productGroup); setDeleteDialogOpen(true); }} data-testid={`button-delete-${productGroup.id}`}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </TableCell>
+                    {isAdmin && (
+                      <TableCell>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => handleEdit(productGroup)} data-testid={`button-edit-${productGroup.id}`}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => { setProductGroupToDelete(productGroup); setDeleteDialogOpen(true); }} data-testid={`button-delete-${productGroup.id}`}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>

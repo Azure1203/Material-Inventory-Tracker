@@ -18,6 +18,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Plus, Edit, Trash2, Palette, Loader2, ArrowRight } from "lucide-react";
 import { useLocation } from "wouter";
 import { insertColorRangeSchema, type ColorRange, type Manufacturer, type InsertColorRange } from "@shared/schema";
+import { useAdminAuth } from "@/lib/adminAuth";
 
 const colorRangeFormSchema = insertColorRangeSchema.extend({
   name: z.string().min(1, "Name is required"),
@@ -36,6 +37,7 @@ export default function ColorRanges() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { isAdmin } = useAdminAuth();
 
   const { data: colorRanges, isLoading } = useQuery<ColorRangeWithManufacturer[]>({
     queryKey: ["/api/color-ranges"],
@@ -127,10 +129,12 @@ export default function ColorRanges() {
           <h1 className="text-2xl font-bold">Color Collections</h1>
           <p className="text-muted-foreground">Manage manufacturer color collections</p>
         </div>
-        <Button onClick={handleAddNew} data-testid="button-add-color-collection">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Color Collection
-        </Button>
+        {isAdmin && (
+          <Button onClick={handleAddNew} data-testid="button-add-color-collection">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Color Collection
+          </Button>
+        )}
       </div>
 
       <Card>
@@ -153,7 +157,7 @@ export default function ColorRanges() {
                   <TableHead>Name</TableHead>
                   <TableHead>Manufacturer</TableHead>
                   <TableHead>Materials</TableHead>
-                  <TableHead className="w-[100px]">Actions</TableHead>
+                  {isAdmin && <TableHead className="w-[100px]">Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -179,16 +183,18 @@ export default function ColorRanges() {
                         <ArrowRight className="h-4 w-4 ml-1" />
                       </Button>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleEdit(colorRange); }} data-testid={`button-edit-${colorRange.id}`}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setColorRangeToDelete(colorRange); setDeleteDialogOpen(true); }} data-testid={`button-delete-${colorRange.id}`}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </TableCell>
+                    {isAdmin && (
+                      <TableCell>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleEdit(colorRange); }} data-testid={`button-edit-${colorRange.id}`}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setColorRangeToDelete(colorRange); setDeleteDialogOpen(true); }} data-testid={`button-delete-${colorRange.id}`}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>

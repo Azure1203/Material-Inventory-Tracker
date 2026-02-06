@@ -11,7 +11,7 @@ interface MaterialDetailDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   material: MaterialWithRelations | null;
-  onEdit: (material: MaterialWithRelations) => void;
+  onEdit?: (material: MaterialWithRelations) => void;
 }
 
 export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: MaterialDetailDialogProps) {
@@ -31,6 +31,7 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
   if (!material) return null;
 
   const handleEdit = () => {
+    if (!onEdit) return;
     onOpenChange(false);
     onEdit(material);
   };
@@ -51,10 +52,12 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
                 {material.colorRange?.name || ""}
               </p>
             </div>
-            <Button variant="outline" size="sm" onClick={handleEdit} data-testid="button-edit-from-detail">
-              <Edit className="h-4 w-4 mr-2" />
-              Edit
-            </Button>
+            {onEdit && (
+              <Button variant="outline" size="sm" onClick={handleEdit} data-testid="button-edit-from-detail">
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+            )}
           </div>
         </DialogHeader>
 
