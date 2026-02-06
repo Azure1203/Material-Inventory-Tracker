@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { getCostLevelDisplay, getCostLevelColor } from "@/lib/utils";
-import { ExternalLink, Edit, X } from "lucide-react";
+import { ExternalLink, Edit, X, Info } from "lucide-react";
 import type { MaterialWithRelations } from "@shared/schema";
 
 interface MaterialDetailDialogProps {
@@ -77,9 +77,15 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
             <DetailItem 
               label="Cost Level" 
               value={
-                <span className={`font-semibold ${getCostLevelColor(material.costLevel)}`}>
-                  {getCostLevelDisplay(material.costLevel)}
-                </span>
+                <div>
+                  <span className={`font-semibold ${getCostLevelColor(material.costLevel)}`}>
+                    {getCostLevelDisplay(material.costLevel)}
+                  </span>
+                  <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground" data-testid="notice-cost-guideline-detail">
+                    <Info className="h-3 w-3 shrink-0" />
+                    <span>Cost category is meant to serve as a guideline only.</span>
+                  </div>
+                </div>
               }
               testId="text-cost-level"
             />
