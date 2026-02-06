@@ -1,9 +1,10 @@
+import { useState, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { getCostLevelDisplay, getCostLevelColor } from "@/lib/utils";
-import { ExternalLink, Edit } from "lucide-react";
+import { ExternalLink, Edit, X } from "lucide-react";
 import type { MaterialWithRelations } from "@shared/schema";
 
 interface MaterialDetailDialogProps {
@@ -14,6 +15,19 @@ interface MaterialDetailDialogProps {
 }
 
 export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: MaterialDetailDialogProps) {
+  const [showLightbox, setShowLightbox] = useState(false);
+
+  const closeLightbox = useCallback(() => setShowLightbox(false), []);
+
+  useEffect(() => {
+    if (!showLightbox) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeLightbox();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [showLightbox, closeLightbox]);
+
   if (!material) return null;
 
   const handleEdit = () => {
@@ -22,6 +36,7 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
   };
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="dialog-material-detail">
         <DialogHeader>
@@ -49,7 +64,8 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
               <img 
                 src={material.imageUrl} 
                 alt={material.name}
-                className="max-h-48 rounded-lg border object-contain"
+                className="max-h-48 rounded-lg border object-contain cursor-pointer"
+                onClick={() => setShowLightbox(true)}
                 data-testid="img-material"
               />
             </div>
@@ -134,6 +150,32 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
         </div>
       </DialogContent>
     </Dialog>
+
+    {showLightbox && material.imageUrl && (
+      <div 
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80"
+        onClick={() => setShowLightbox(false)}
+        data-testid="lightbox-overlay"
+      >
+        <Button
+          size="icon"
+          variant="ghost"
+          className="absolute top-4 right-4 text-white"
+          onClick={(e) => { e.stopPropagation(); setShowLightbox(false); }}
+          data-testid="button-close-lightbox"
+        >
+          <X className="h-6 w-6" />
+        </Button>
+        <img 
+          src={material.imageUrl} 
+          alt={material.name}
+          className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
+          onClick={(e) => e.stopPropagation()}
+          data-testid="img-material-fullsize"
+        />
+      </div>
+    )}
+    </>
   );
 }
 
