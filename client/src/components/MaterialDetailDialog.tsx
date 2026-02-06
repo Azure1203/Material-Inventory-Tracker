@@ -33,7 +33,7 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
                   : material.name}
               </DialogTitle>
               <p className="text-sm text-muted-foreground mt-1" data-testid="text-material-subtitle">
-                {[material.finish, material.colorRange?.name].filter(Boolean).join(" • ")}
+                {material.colorRange?.name || ""}
               </p>
             </div>
             <Button variant="outline" size="sm" onClick={handleEdit} data-testid="button-edit-from-detail">
@@ -58,7 +58,6 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
           <div className="grid grid-cols-2 gap-4">
             <DetailItem label="Product Code" value={material.productCode} testId="text-product-code" />
             <DetailItem label="Name" value={material.name} testId="text-name" />
-            <DetailItem label="Finish" value={material.finish} testId="text-finish" />
             <DetailItem 
               label="Cost Level" 
               value={

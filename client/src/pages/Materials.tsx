@@ -91,7 +91,6 @@ export default function Materials() {
       const matchesSearch = !searchQuery || 
         material.name.toLowerCase().includes(searchLower) ||
         material.productCode?.toLowerCase().includes(searchLower) ||
-        material.finish?.toLowerCase().includes(searchLower) ||
         material.manufacturer?.name.toLowerCase().includes(searchLower) ||
         material.supplier?.name.toLowerCase().includes(searchLower) ||
         material.colorRange?.name.toLowerCase().includes(searchLower);
@@ -319,7 +318,7 @@ export default function Materials() {
                             )}
                           </div>
                           <span className="text-xs text-muted-foreground">
-                            {[material.productCode, material.finish, material.colorRange?.name].filter(Boolean).join(" • ")}
+                            {[material.productCode, material.colorRange?.name].filter(Boolean).join(" • ")}
                           </span>
                         </div>
                       </TableCell>

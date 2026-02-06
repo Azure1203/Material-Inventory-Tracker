@@ -68,7 +68,6 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
     defaultValues: {
       name: "",
       productCode: "",
-      finish: "",
       inStock: true,
       costLevel: 1,
       supplierId: null,
@@ -87,7 +86,6 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
       form.reset({
         name: material.name || "",
         productCode: material.productCode || "",
-        finish: material.finish || "",
         inStock: material.inStock ?? true,
         costLevel: material.costLevel || 1,
         supplierId: material.supplierId || null,
@@ -103,7 +101,6 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
       form.reset({
         name: "",
         productCode: "",
-        finish: "",
         inStock: true,
         costLevel: 1,
         supplierId: null,
@@ -226,19 +223,6 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="finish"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Finish</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., Karisma Finish" {...field} value={field.value || ""} data-testid="input-finish" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               <FormField
                 control={form.control}
                 name="costLevel"

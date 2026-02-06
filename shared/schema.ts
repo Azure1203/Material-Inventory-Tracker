@@ -71,7 +71,6 @@ export const materials = pgTable("materials", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   productCode: text("product_code"),
-  finish: text("finish"),
   inStock: boolean("in_stock").notNull().default(true),
   costLevel: integer("cost_level").notNull().default(1), // 1 = $, 2 = $$, etc.
   supplierId: integer("supplier_id").references(() => suppliers.id),
