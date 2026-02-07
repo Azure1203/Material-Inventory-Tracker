@@ -48,7 +48,7 @@ export default function Dashboard() {
       icon: Package,
       color: "text-primary",
       bgColor: "bg-primary/10",
-      href: "/materials",
+      href: manufacturerFilter ? `/materials?manufacturer=${manufacturerFilter}` : "/materials",
     },
     {
       title: "Suppliers",
@@ -118,7 +118,10 @@ export default function Dashboard() {
             key={m.id}
             variant={manufacturerFilter === m.id ? "default" : "outline"}
             size="sm"
-            onClick={() => setManufacturerFilter(m.id)}
+            onClick={() => {
+              setManufacturerFilter(m.id);
+              navigate(`/materials?manufacturer=${m.id}`);
+            }}
             data-testid={`button-filter-manufacturer-${m.id}`}
           >
             {m.name}
