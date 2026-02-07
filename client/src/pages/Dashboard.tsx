@@ -1,17 +1,21 @@
-import { useState } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Package, Building2, Factory, Palette, Layers, DollarSign, Info } from "lucide-react";
+import { Package, Building2, Factory, Palette, Layers, DollarSign, Info, Search, X } from "lucide-react";
 import { getCostLevelDisplay, getCostLevelColor } from "@/lib/utils";
 import type { MaterialWithRelations, Supplier, Manufacturer, ColorRange, ProductGroup } from "@shared/schema";
 
 export default function Dashboard() {
   const [, navigate] = useLocation();
   const [manufacturerFilter, setManufacturerFilter] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   const { data: materials, isLoading: materialsLoading } = useQuery<MaterialWithRelations[]>({
     queryKey: ["/api/materials"],
@@ -34,6 +38,30 @@ export default function Dashboard() {
   });
 
   const isLoading = materialsLoading || suppliersLoading || manufacturersLoading || colorRangesLoading || productGroupsLoading;
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setSearchFocused(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim() || !materials) return [];
+    const query = searchQuery.toLowerCase();
+    return materials
+      .filter(m =>
+        m.name.toLowerCase().includes(query) ||
+        m.productCode?.toLowerCase().includes(query) ||
+        m.manufacturer?.name.toLowerCase().includes(query) ||
+        m.supplier?.name.toLowerCase().includes(query) ||
+        m.colorRange?.name.toLowerCase().includes(query)
+      )
+      .slice(0, 8);
+  }, [searchQuery, materials]);
 
   const filteredMaterials = manufacturerFilter
     ? materials?.filter(m => m.manufacturerId === manufacturerFilter)
@@ -90,9 +118,82 @@ export default function Dashboard() {
 
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold" data-testid="text-dashboard-title">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">Overview of your material inventory</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold" data-testid="text-dashboard-title">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">Overview of your material inventory</p>
+        </div>
+        <div ref={searchRef} className="relative w-full sm:w-72">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search materials..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => setSearchFocused(true)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && searchQuery.trim()) {
+                setSearchFocused(false);
+                navigate(`/materials?search=${encodeURIComponent(searchQuery.trim())}`);
+              }
+            }}
+            className="pl-9 pr-9"
+            data-testid="input-dashboard-search"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              data-testid="button-clear-search"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+          {searchFocused && searchQuery.trim() && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-popover border rounded-md shadow-lg z-50 max-h-80 overflow-y-auto">
+              {searchResults.length === 0 ? (
+                <div className="p-3 text-sm text-muted-foreground text-center">No materials found</div>
+              ) : (
+                <>
+                  {searchResults.map(material => (
+                    <div
+                      key={material.id}
+                      className="flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover-elevate"
+                      onClick={() => {
+                        setSearchFocused(false);
+                        setSearchQuery("");
+                        navigate(`/materials?search=${encodeURIComponent(material.name)}`);
+                      }}
+                      data-testid={`search-result-${material.id}`}
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{material.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {[material.manufacturer?.name, material.supplier?.name, material.productCode].filter(Boolean).join(" · ")}
+                        </p>
+                      </div>
+                      {material.inStock ? (
+                        <Badge variant="secondary" className="shrink-0 text-xs">Stock</Badge>
+                      ) : (
+                        <Badge variant="outline" className="shrink-0 text-xs">Non-Stock</Badge>
+                      )}
+                    </div>
+                  ))}
+                  <div
+                    className="border-t px-3 py-2 text-sm text-primary cursor-pointer hover-elevate text-center"
+                    onClick={() => {
+                      setSearchFocused(false);
+                      navigate(`/materials?search=${encodeURIComponent(searchQuery.trim())}`);
+                      setSearchQuery("");
+                    }}
+                    data-testid="button-view-all-results"
+                  >
+                    View all results on Materials page
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center gap-2 rounded-md border px-3 sm:px-4 py-2 text-xs sm:text-sm text-muted-foreground" data-testid="notice-cost-guideline">

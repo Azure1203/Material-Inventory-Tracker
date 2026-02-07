@@ -22,7 +22,7 @@ export default function Materials() {
   const searchString = useSearch();
   const urlParams = new URLSearchParams(searchString);
 
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(urlParams.get("search") || "");
   const [stockFilter, setStockFilter] = useState<"all" | "stock" | "non-stock">("all");
   const [supplierFilter, setSupplierFilter] = useState<string>(urlParams.get("supplier") || "all");
   const [manufacturerFilter, setManufacturerFilter] = useState<string>(urlParams.get("manufacturer") || "all");
@@ -37,6 +37,8 @@ export default function Materials() {
     const supplier = params.get("supplier");
     const manufacturer = params.get("manufacturer");
     const colorRange = params.get("colorRange");
+    const search = params.get("search");
+    if (search) setSearchQuery(search);
     if (pg) setProductGroupFilter(pg);
     if (cost) setCostFilter(cost);
     if (supplier) setSupplierFilter(supplier);
