@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Package, Building2, Factory, Palette, Layers, DollarSign, Info } from "lucide-react";
 import { getCostLevelDisplay, getCostLevelColor } from "@/lib/utils";
@@ -9,6 +11,7 @@ import type { MaterialWithRelations, Supplier, Manufacturer, ColorRange, Product
 
 export default function Dashboard() {
   const [, navigate] = useLocation();
+  const [manufacturerFilter, setManufacturerFilter] = useState<number | null>(null);
 
   const { data: materials, isLoading: materialsLoading } = useQuery<MaterialWithRelations[]>({
     queryKey: ["/api/materials"],
@@ -32,7 +35,11 @@ export default function Dashboard() {
 
   const isLoading = materialsLoading || suppliersLoading || manufacturersLoading || colorRangesLoading || productGroupsLoading;
 
-  const totalMaterials = materials?.length || 0;
+  const filteredMaterials = manufacturerFilter
+    ? materials?.filter(m => m.manufacturerId === manufacturerFilter)
+    : materials;
+
+  const totalMaterials = filteredMaterials?.length || 0;
 
   const stats = [
     {
@@ -71,14 +78,14 @@ export default function Dashboard() {
 
   const materialsByGroup = productGroups?.map(group => ({
     ...group,
-    count: materials?.filter(m => m.productGroups?.some(pg => pg.id === group.id)).length || 0,
+    count: filteredMaterials?.filter(m => m.productGroups?.some(pg => pg.id === group.id)).length || 0,
   })) || [];
 
   const materialsByCost = [1, 2, 3, 4, 5].map(level => ({
     level,
     display: getCostLevelDisplay(level),
     colorClass: getCostLevelColor(level),
-    count: materials?.filter(m => m.costLevel === level).length || 0,
+    count: filteredMaterials?.filter(m => m.costLevel === level).length || 0,
   })).filter(c => c.count > 0);
 
   return (
@@ -91,6 +98,32 @@ export default function Dashboard() {
       <div className="flex items-center gap-2 rounded-md border px-4 py-2 text-sm text-muted-foreground" data-testid="notice-cost-guideline">
         <Info className="h-4 w-4 shrink-0" />
         <span>Cost category is meant to serve as a guideline only.</span>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-sm font-medium text-muted-foreground mr-1">
+          <Factory className="h-4 w-4 inline mr-1" />
+          Manufacturer:
+        </span>
+        <Button
+          variant={manufacturerFilter === null ? "default" : "outline"}
+          size="sm"
+          onClick={() => setManufacturerFilter(null)}
+          data-testid="button-filter-manufacturer-all"
+        >
+          All
+        </Button>
+        {manufacturers?.map(m => (
+          <Button
+            key={m.id}
+            variant={manufacturerFilter === m.id ? "default" : "outline"}
+            size="sm"
+            onClick={() => setManufacturerFilter(m.id)}
+            data-testid={`button-filter-manufacturer-${m.id}`}
+          >
+            {m.name}
+          </Button>
+        ))}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -149,7 +182,7 @@ export default function Dashboard() {
                   <div
                     key={group.id}
                     className="flex items-center justify-between p-3 rounded-md bg-muted/50 cursor-pointer hover-elevate"
-                    onClick={() => navigate(`/materials?productGroup=${group.id}`)}
+                    onClick={() => navigate(`/materials?productGroup=${group.id}${manufacturerFilter ? `&manufacturer=${manufacturerFilter}` : ""}`)}
                     data-testid={`group-${group.id}`}
                   >
                     <p className="font-medium text-sm">{group.name}</p>
@@ -186,7 +219,7 @@ export default function Dashboard() {
                   <div
                     key={cost.level}
                     className="flex items-center justify-between p-3 rounded-md bg-muted/50 cursor-pointer hover-elevate"
-                    onClick={() => navigate(`/materials?cost=${cost.level}`)}
+                    onClick={() => navigate(`/materials?cost=${cost.level}${manufacturerFilter ? `&manufacturer=${manufacturerFilter}` : ""}`)}
                     data-testid={`cost-level-${cost.level}`}
                   >
                     <p className={`font-bold text-sm ${cost.colorClass}`}>{cost.display}</p>

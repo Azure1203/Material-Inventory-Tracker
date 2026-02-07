@@ -35,7 +35,7 @@ The schema defines a hierarchical structure:
 - **Manufacturers**: Companies that make materials (e.g., Tafisa, Uniboard)
 - **Color Collections**: Product lines from manufacturers (e.g., Karisma, Rivera)
 - **Product Groups**: Categories for materials (e.g., Interior Colors, Sublime Collection)
-- **Materials**: Individual products with references to supplier, manufacturer, color collection, and product group
+- **Materials**: Individual products with references to supplier, manufacturer, color collection, and product groups (many-to-many via `materialProductGroups` junction table)
 - **Material Sizes**: Available size options (width × length @ thickness) for each material - combines dimensions and thickness into single entries since availability varies by combination (e.g., 4ft x 8ft @ 5/8")
 
 ### Build System
@@ -81,6 +81,18 @@ The schema defines a hierarchical structure:
 - Size options are stored in `materialSizes` table with `width`, `length`, and `thickness` fields
 - Availability varies by combination - certain sizes may only be available in specific thicknesses
 - Display format: "width x length @ thickness"
+
+### Admin Authentication
+- Password-based admin access controls editing (add/edit/delete) across all entity pages
+- The catalog is publicly viewable by everyone; only admin users can make changes
+- Backend: express-session stores `isAdmin` flag; all POST/PATCH/DELETE routes use `requireAdmin` middleware
+- Frontend: `AdminAuthProvider` context provides `isAdmin` state; admin login/logout toggle in the header
+- Admin password stored as `ADMIN_PASSWORD` secret environment variable
+- Auth endpoints: POST `/api/auth/login`, POST `/api/auth/logout`, GET `/api/auth/status`
+
+### Dashboard
+- Dashboard features a manufacturer filter (button row) that filters all stats, product group breakdowns, and cost level breakdowns
+- Clicking through to Materials from a filtered dashboard preserves the manufacturer filter as a URL parameter
 
 ### Technical Notes
 - SelectItem components cannot use empty string values due to Radix Select requirements. Use "all" or similar non-empty placeholder values for "All items" options.
