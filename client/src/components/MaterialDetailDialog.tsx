@@ -39,7 +39,7 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="dialog-material-detail">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full" data-testid="dialog-material-detail">
         <DialogHeader>
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -74,7 +74,7 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <DetailItem label="Product Code" value={material.productCode} testId="text-product-code" />
             <DetailItem label="Name" value={material.name} testId="text-name" />
             <DetailItem 
@@ -105,7 +105,7 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
 
           <Separator />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <DetailItem label="Manufacturer" value={material.manufacturer?.name} testId="text-manufacturer" />
             <DetailItem label="Supplier" value={material.supplier?.name} testId="text-supplier" />
             <DetailItem label="Color Collection" value={material.colorRange?.name} testId="text-color-collection" />

@@ -113,11 +113,11 @@ export default function Suppliers() {
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Suppliers</h1>
-          <p className="text-muted-foreground">Manage your material suppliers/distributors</p>
+          <h1 className="text-xl sm:text-2xl font-bold">Suppliers</h1>
+          <p className="text-sm text-muted-foreground">Manage your material suppliers/distributors</p>
         </div>
         {isAdmin && (
           <Button onClick={handleAddNew} data-testid="button-add-supplier">
@@ -141,50 +141,81 @@ export default function Suppliers() {
               <p className="text-muted-foreground">No suppliers yet. Add your first supplier!</p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Materials</TableHead>
-                  {isAdmin && <TableHead className="w-[100px]">Actions</TableHead>}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              <div className="hidden sm:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Materials</TableHead>
+                      {isAdmin && <TableHead className="w-[100px]">Actions</TableHead>}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {suppliers?.map(supplier => (
+                      <TableRow 
+                        key={supplier.id} 
+                        data-testid={`supplier-row-${supplier.id}`}
+                        className="cursor-pointer hover-elevate"
+                        onClick={() => navigate(`/materials?supplier=${supplier.id}`)}
+                      >
+                        <TableCell className="font-medium">{supplier.name}</TableCell>
+                        <TableCell>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={(e) => { e.stopPropagation(); navigate(`/materials?supplier=${supplier.id}`); }}
+                            data-testid={`button-view-materials-${supplier.id}`}
+                          >
+                            View Materials
+                            <ArrowRight className="h-4 w-4 ml-1" />
+                          </Button>
+                        </TableCell>
+                        {isAdmin && (
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleEdit(supplier); }} data-testid={`button-edit-${supplier.id}`}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setSupplierToDelete(supplier); setDeleteDialogOpen(true); }} data-testid={`button-delete-${supplier.id}`}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="sm:hidden divide-y">
                 {suppliers?.map(supplier => (
-                  <TableRow 
-                    key={supplier.id} 
-                    data-testid={`supplier-row-${supplier.id}`}
-                    className="cursor-pointer hover-elevate"
+                  <div
+                    key={supplier.id}
+                    data-testid={`supplier-card-${supplier.id}`}
+                    className="p-3 cursor-pointer hover-elevate"
                     onClick={() => navigate(`/materials?supplier=${supplier.id}`)}
                   >
-                    <TableCell className="font-medium">{supplier.name}</TableCell>
-                    <TableCell>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={(e) => { e.stopPropagation(); navigate(`/materials?supplier=${supplier.id}`); }}
-                        data-testid={`button-view-materials-${supplier.id}`}
-                      >
-                        View Materials
-                        <ArrowRight className="h-4 w-4 ml-1" />
-                      </Button>
-                    </TableCell>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-medium text-sm">{supplier.name}</p>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                    </div>
                     {isAdmin && (
-                      <TableCell>
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleEdit(supplier); }} data-testid={`button-edit-${supplier.id}`}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setSupplierToDelete(supplier); setDeleteDialogOpen(true); }} data-testid={`button-delete-${supplier.id}`}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </TableCell>
+                      <div className="flex gap-1 mt-2">
+                        <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleEdit(supplier); }} data-testid={`button-edit-mobile-${supplier.id}`}>
+                          <Edit className="h-3 w-3 mr-1" />
+                          Edit
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setSupplierToDelete(supplier); setDeleteDialogOpen(true); }} data-testid={`button-delete-mobile-${supplier.id}`}>
+                          <Trash2 className="h-3 w-3 mr-1 text-destructive" />
+                          Delete
+                        </Button>
+                      </div>
                     )}
-                  </TableRow>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

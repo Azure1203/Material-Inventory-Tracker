@@ -123,11 +123,11 @@ export default function ColorRanges() {
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Color Collections</h1>
-          <p className="text-muted-foreground">Manage manufacturer color collections</p>
+          <h1 className="text-xl sm:text-2xl font-bold">Color Collections</h1>
+          <p className="text-sm text-muted-foreground">Manage manufacturer color collections</p>
         </div>
         {isAdmin && (
           <Button onClick={handleAddNew} data-testid="button-add-color-collection">
@@ -151,54 +151,88 @@ export default function ColorRanges() {
               <p className="text-muted-foreground">No color collections yet. Add your first color collection!</p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Manufacturer</TableHead>
-                  <TableHead>Materials</TableHead>
-                  {isAdmin && <TableHead className="w-[100px]">Actions</TableHead>}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              <div className="hidden sm:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Manufacturer</TableHead>
+                      <TableHead>Materials</TableHead>
+                      {isAdmin && <TableHead className="w-[100px]">Actions</TableHead>}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {colorRanges?.map(colorRange => (
+                      <TableRow 
+                        key={colorRange.id} 
+                        data-testid={`color-range-row-${colorRange.id}`}
+                        className="cursor-pointer hover-elevate"
+                        onClick={() => navigate(`/materials?colorRange=${colorRange.id}`)}
+                      >
+                        <TableCell className="font-medium">{colorRange.name}</TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">{colorRange.manufacturer?.name || "Unknown"}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={(e) => { e.stopPropagation(); navigate(`/materials?colorRange=${colorRange.id}`); }}
+                            data-testid={`button-view-materials-${colorRange.id}`}
+                          >
+                            View Materials
+                            <ArrowRight className="h-4 w-4 ml-1" />
+                          </Button>
+                        </TableCell>
+                        {isAdmin && (
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleEdit(colorRange); }} data-testid={`button-edit-${colorRange.id}`}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setColorRangeToDelete(colorRange); setDeleteDialogOpen(true); }} data-testid={`button-delete-${colorRange.id}`}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="sm:hidden divide-y">
                 {colorRanges?.map(colorRange => (
-                  <TableRow 
-                    key={colorRange.id} 
-                    data-testid={`color-range-row-${colorRange.id}`}
-                    className="cursor-pointer hover-elevate"
+                  <div
+                    key={colorRange.id}
+                    data-testid={`color-range-card-${colorRange.id}`}
+                    className="p-3 cursor-pointer hover-elevate"
                     onClick={() => navigate(`/materials?colorRange=${colorRange.id}`)}
                   >
-                    <TableCell className="font-medium">{colorRange.name}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">{colorRange.manufacturer?.name || "Unknown"}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={(e) => { e.stopPropagation(); navigate(`/materials?colorRange=${colorRange.id}`); }}
-                        data-testid={`button-view-materials-${colorRange.id}`}
-                      >
-                        View Materials
-                        <ArrowRight className="h-4 w-4 ml-1" />
-                      </Button>
-                    </TableCell>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm">{colorRange.name}</p>
+                        <Badge variant="secondary" className="text-xs mt-1">{colorRange.manufacturer?.name || "Unknown"}</Badge>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                    </div>
                     {isAdmin && (
-                      <TableCell>
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleEdit(colorRange); }} data-testid={`button-edit-${colorRange.id}`}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setColorRangeToDelete(colorRange); setDeleteDialogOpen(true); }} data-testid={`button-delete-${colorRange.id}`}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </TableCell>
+                      <div className="flex gap-1 mt-2">
+                        <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleEdit(colorRange); }} data-testid={`button-edit-mobile-${colorRange.id}`}>
+                          <Edit className="h-3 w-3 mr-1" />
+                          Edit
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setColorRangeToDelete(colorRange); setDeleteDialogOpen(true); }} data-testid={`button-delete-mobile-${colorRange.id}`}>
+                          <Trash2 className="h-3 w-3 mr-1 text-destructive" />
+                          Delete
+                        </Button>
+                      </div>
                     )}
-                  </TableRow>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

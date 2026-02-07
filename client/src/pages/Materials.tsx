@@ -149,11 +149,11 @@ export default function Materials() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Materials</h1>
-          <p className="text-muted-foreground">Manage your material inventory</p>
+          <h1 className="text-xl sm:text-2xl font-bold">Materials</h1>
+          <p className="text-sm text-muted-foreground">Manage your material inventory</p>
         </div>
         {isAdmin && (
           <Button onClick={handleAddNew} data-testid="button-add-material">
@@ -163,14 +163,14 @@ export default function Materials() {
         )}
       </div>
 
-      <div className="flex items-center gap-2 rounded-md border px-4 py-2 text-sm text-muted-foreground" data-testid="notice-cost-guideline">
+      <div className="flex items-center gap-2 rounded-md border px-3 sm:px-4 py-2 text-xs sm:text-sm text-muted-foreground" data-testid="notice-cost-guideline">
         <Info className="h-4 w-4 shrink-0" />
         <span>Cost category is meant to serve as a guideline only.</span>
       </div>
 
       <Card>
-        <CardHeader className="pb-3">
-          <div className="flex flex-col lg:flex-row gap-4">
+        <CardHeader className="p-3 sm:p-6 pb-3">
+          <div className="flex flex-col gap-3 sm:gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -181,9 +181,9 @@ export default function Materials() {
                 data-testid="input-search"
               />
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
               <Select value={stockFilter} onValueChange={(val) => setStockFilter(val as typeof stockFilter)}>
-                <SelectTrigger className="w-[140px]" data-testid="filter-stock">
+                <SelectTrigger className="w-full sm:w-[140px]" data-testid="filter-stock">
                   <SelectValue placeholder="Stock type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -194,7 +194,7 @@ export default function Materials() {
               </Select>
 
               <Select value={supplierFilter} onValueChange={setSupplierFilter}>
-                <SelectTrigger className="w-[140px]" data-testid="filter-supplier">
+                <SelectTrigger className="w-full sm:w-[140px]" data-testid="filter-supplier">
                   <SelectValue placeholder="Supplier" />
                 </SelectTrigger>
                 <SelectContent>
@@ -206,7 +206,7 @@ export default function Materials() {
               </Select>
 
               <Select value={manufacturerFilter} onValueChange={setManufacturerFilter}>
-                <SelectTrigger className="w-[160px]" data-testid="filter-manufacturer">
+                <SelectTrigger className="w-full sm:w-[160px]" data-testid="filter-manufacturer">
                   <SelectValue placeholder="Manufacturer" />
                 </SelectTrigger>
                 <SelectContent>
@@ -218,7 +218,7 @@ export default function Materials() {
               </Select>
 
               <Select value={productGroupFilter} onValueChange={setProductGroupFilter}>
-                <SelectTrigger className="w-[160px]" data-testid="filter-product-group">
+                <SelectTrigger className="w-full sm:w-[160px]" data-testid="filter-product-group">
                   <SelectValue placeholder="Product Group" />
                 </SelectTrigger>
                 <SelectContent>
@@ -230,7 +230,7 @@ export default function Materials() {
               </Select>
 
               <Select value={costFilter} onValueChange={setCostFilter}>
-                <SelectTrigger className="w-[120px]" data-testid="filter-cost">
+                <SelectTrigger className="w-full sm:w-[120px]" data-testid="filter-cost">
                   <SelectValue placeholder="Cost" />
                 </SelectTrigger>
                 <SelectContent>
@@ -244,7 +244,7 @@ export default function Materials() {
               </Select>
 
               {hasFilters && (
-                <Button variant="ghost" size="icon" onClick={clearFilters} data-testid="button-clear-filters">
+                <Button variant="ghost" size="icon" onClick={clearFilters} className="col-span-1" data-testid="button-clear-filters">
                   <X className="h-4 w-4" />
                 </Button>
               )}
@@ -253,7 +253,7 @@ export default function Materials() {
         </CardHeader>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-6 space-y-3">
+            <div className="p-4 sm:p-6 space-y-3">
               {[1, 2, 3, 4, 5].map(i => (
                 <Skeleton key={i} className="h-16 w-full" />
               ))}
@@ -271,126 +271,206 @@ export default function Materials() {
               )}
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[50px]">Image</TableHead>
-                    <TableHead>Material</TableHead>
-                    <TableHead>Manufacturer</TableHead>
-                    <TableHead>Supplier</TableHead>
-                    <TableHead>Size Options</TableHead>
-                    <TableHead>Cost</TableHead>
-                    <TableHead>Type</TableHead>
-                    {isAdmin && <TableHead className="w-[100px]">Actions</TableHead>}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredMaterials.map(material => (
-                    <TableRow 
-                      key={material.id} 
-                      data-testid={`material-row-${material.id}`}
-                      className="cursor-pointer hover-elevate"
-                      onClick={() => handleRowClick(material)}
-                    >
-                      <TableCell>
-                        {material.imageUrl ? (
-                          <img 
-                            src={material.imageUrl} 
-                            alt={material.name}
-                            className="h-10 w-10 rounded-md object-cover border"
-                          />
-                        ) : (
-                          <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center">
-                            <Package className="h-5 w-5 text-muted-foreground" />
+            <>
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[50px]">Image</TableHead>
+                      <TableHead>Material</TableHead>
+                      <TableHead>Manufacturer</TableHead>
+                      <TableHead>Supplier</TableHead>
+                      <TableHead>Size Options</TableHead>
+                      <TableHead>Cost</TableHead>
+                      <TableHead>Type</TableHead>
+                      {isAdmin && <TableHead className="w-[100px]">Actions</TableHead>}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredMaterials.map(material => (
+                      <TableRow 
+                        key={material.id} 
+                        data-testid={`material-row-${material.id}`}
+                        className="cursor-pointer hover-elevate"
+                        onClick={() => handleRowClick(material)}
+                      >
+                        <TableCell>
+                          {material.imageUrl ? (
+                            <img 
+                              src={material.imageUrl} 
+                              alt={material.name}
+                              className="h-10 w-10 rounded-md object-cover border"
+                            />
+                          ) : (
+                            <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center">
+                              <Package className="h-5 w-5 text-muted-foreground" />
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">
+                                {material.productCode && !material.name.startsWith(material.productCode) 
+                                  ? `${material.productCode} ${material.name}` 
+                                  : material.name}
+                              </span>
+                              {material.websiteUrl && (
+                                <a 
+                                  href={material.websiteUrl} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-muted-foreground hover:text-primary"
+                                  data-testid={`link-website-${material.id}`}
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                </a>
+                              )}
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                              {[material.productCode, material.colorRange?.name].filter(Boolean).join(" • ")}
+                            </span>
                           </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-sm">{material.manufacturer?.name || "-"}</span>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-sm">{material.supplier?.name || "-"}</span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {material.sizes?.length > 0 ? (
+                              material.sizes.map(s => (
+                                <Badge 
+                                  key={s.id} 
+                                  variant="secondary"
+                                  className="text-xs"
+                                >
+                                  {s.width} x {s.length} @ {s.thickness}
+                                </Badge>
+                              ))
+                            ) : (
+                              <span className="text-sm text-muted-foreground">-</span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className={`font-semibold ${getCostLevelColor(material.costLevel)}`}>
+                            {getCostLevelDisplay(material.costLevel)}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={material.inStock ? "default" : "secondary"}>
+                            {material.inStock ? "Stock" : "Non-Stock"}
+                          </Badge>
+                        </TableCell>
+                        {isAdmin && (
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                onClick={(e) => { e.stopPropagation(); handleEdit(material); }}
+                                data-testid={`button-edit-${material.id}`}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                onClick={(e) => { e.stopPropagation(); handleDelete(material); }}
+                                data-testid={`button-delete-${material.id}`}
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </TableCell>
                         )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="md:hidden divide-y">
+                {filteredMaterials.map(material => (
+                  <div
+                    key={material.id}
+                    data-testid={`material-card-${material.id}`}
+                    className="p-3 cursor-pointer hover-elevate"
+                    onClick={() => handleRowClick(material)}
+                  >
+                    <div className="flex gap-3">
+                      {material.imageUrl ? (
+                        <img 
+                          src={material.imageUrl} 
+                          alt={material.name}
+                          className="h-12 w-12 rounded-md object-cover border shrink-0"
+                        />
+                      ) : (
+                        <div className="h-12 w-12 rounded-md bg-muted flex items-center justify-center shrink-0">
+                          <Package className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="font-medium text-sm truncate">
                               {material.productCode && !material.name.startsWith(material.productCode) 
                                 ? `${material.productCode} ${material.name}` 
                                 : material.name}
-                            </span>
-                            {material.websiteUrl && (
-                              <a 
-                                href={material.websiteUrl} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-muted-foreground hover:text-primary"
-                                data-testid={`link-website-${material.id}`}
-                              >
-                                <ExternalLink className="h-3 w-3" />
-                              </a>
-                            )}
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {[material.manufacturer?.name, material.supplier?.name].filter(Boolean).join(" / ")}
+                            </p>
                           </div>
-                          <span className="text-xs text-muted-foreground">
-                            {[material.productCode, material.colorRange?.name].filter(Boolean).join(" • ")}
-                          </span>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <span className={`font-semibold text-xs ${getCostLevelColor(material.costLevel)}`}>
+                              {getCostLevelDisplay(material.costLevel)}
+                            </span>
+                            <Badge variant={material.inStock ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
+                              {material.inStock ? "Stock" : "Non-Stock"}
+                            </Badge>
+                          </div>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm">{material.manufacturer?.name || "-"}</span>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm">{material.supplier?.name || "-"}</span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {material.sizes?.length > 0 ? (
-                            material.sizes.map(s => (
-                              <Badge 
-                                key={s.id} 
-                                variant="secondary"
-                                className="text-xs"
-                              >
+                        {material.sizes?.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            {material.sizes.map(s => (
+                              <Badge key={s.id} variant="secondary" className="text-[10px] px-1.5 py-0">
                                 {s.width} x {s.length} @ {s.thickness}
                               </Badge>
-                            ))
-                          ) : (
-                            <span className="text-sm text-muted-foreground">-</span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className={`font-semibold ${getCostLevelColor(material.costLevel)}`}>
-                          {getCostLevelDisplay(material.costLevel)}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={material.inStock ? "default" : "secondary"}>
-                          {material.inStock ? "Stock" : "Non-Stock"}
-                        </Badge>
-                      </TableCell>
-                      {isAdmin && (
-                        <TableCell>
-                          <div className="flex gap-1">
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              onClick={(e) => { e.stopPropagation(); handleEdit(material); }}
-                              data-testid={`button-edit-${material.id}`}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              onClick={(e) => { e.stopPropagation(); handleDelete(material); }}
-                              data-testid={`button-delete-${material.id}`}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
+                            ))}
                           </div>
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                        )}
+                      </div>
+                    </div>
+                    {isAdmin && (
+                      <div className="flex justify-end gap-1 mt-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={(e) => { e.stopPropagation(); handleEdit(material); }}
+                          data-testid={`button-edit-mobile-${material.id}`}
+                        >
+                          <Edit className="h-3 w-3 mr-1" />
+                          Edit
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={(e) => { e.stopPropagation(); handleDelete(material); }}
+                          data-testid={`button-delete-mobile-${material.id}`}
+                        >
+                          <Trash2 className="h-3 w-3 mr-1 text-destructive" />
+                          Delete
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

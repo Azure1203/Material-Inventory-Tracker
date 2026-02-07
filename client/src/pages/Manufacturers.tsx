@@ -114,11 +114,11 @@ export default function Manufacturers() {
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Manufacturers</h1>
-          <p className="text-muted-foreground">Manage material manufacturers</p>
+          <h1 className="text-xl sm:text-2xl font-bold">Manufacturers</h1>
+          <p className="text-sm text-muted-foreground">Manage material manufacturers</p>
         </div>
         {isAdmin && (
           <Button onClick={handleAddNew} data-testid="button-add-manufacturer">
@@ -142,67 +142,112 @@ export default function Manufacturers() {
               <p className="text-muted-foreground">No manufacturers yet. Add your first manufacturer!</p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Website</TableHead>
-                  <TableHead>Materials</TableHead>
-                  {isAdmin && <TableHead className="w-[100px]">Actions</TableHead>}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              <div className="hidden sm:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Website</TableHead>
+                      <TableHead>Materials</TableHead>
+                      {isAdmin && <TableHead className="w-[100px]">Actions</TableHead>}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {manufacturers?.map(manufacturer => (
+                      <TableRow 
+                        key={manufacturer.id} 
+                        data-testid={`manufacturer-row-${manufacturer.id}`}
+                        className="cursor-pointer hover-elevate"
+                        onClick={() => navigate(`/materials?manufacturer=${manufacturer.id}`)}
+                      >
+                        <TableCell className="font-medium">{manufacturer.name}</TableCell>
+                        <TableCell>
+                          {manufacturer.websiteUrl ? (
+                            <a
+                              href={manufacturer.websiteUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1 text-primary hover:underline text-sm"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                              Visit
+                            </a>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={(e) => { e.stopPropagation(); navigate(`/materials?manufacturer=${manufacturer.id}`); }}
+                            data-testid={`button-view-materials-${manufacturer.id}`}
+                          >
+                            View Materials
+                            <ArrowRight className="h-4 w-4 ml-1" />
+                          </Button>
+                        </TableCell>
+                        {isAdmin && (
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleEdit(manufacturer); }} data-testid={`button-edit-${manufacturer.id}`}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setManufacturerToDelete(manufacturer); setDeleteDialogOpen(true); }} data-testid={`button-delete-${manufacturer.id}`}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="sm:hidden divide-y">
                 {manufacturers?.map(manufacturer => (
-                  <TableRow 
-                    key={manufacturer.id} 
-                    data-testid={`manufacturer-row-${manufacturer.id}`}
-                    className="cursor-pointer hover-elevate"
+                  <div
+                    key={manufacturer.id}
+                    data-testid={`manufacturer-card-${manufacturer.id}`}
+                    className="p-3 cursor-pointer hover-elevate"
                     onClick={() => navigate(`/materials?manufacturer=${manufacturer.id}`)}
                   >
-                    <TableCell className="font-medium">{manufacturer.name}</TableCell>
-                    <TableCell>
-                      {manufacturer.websiteUrl ? (
-                        <a
-                          href={manufacturer.websiteUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-primary hover:underline text-sm"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          Visit
-                        </a>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={(e) => { e.stopPropagation(); navigate(`/materials?manufacturer=${manufacturer.id}`); }}
-                        data-testid={`button-view-materials-${manufacturer.id}`}
-                      >
-                        View Materials
-                        <ArrowRight className="h-4 w-4 ml-1" />
-                      </Button>
-                    </TableCell>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm">{manufacturer.name}</p>
+                        {manufacturer.websiteUrl && (
+                          <a
+                            href={manufacturer.websiteUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-primary text-xs mt-0.5"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            Website
+                          </a>
+                        )}
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                    </div>
                     {isAdmin && (
-                      <TableCell>
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleEdit(manufacturer); }} data-testid={`button-edit-${manufacturer.id}`}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setManufacturerToDelete(manufacturer); setDeleteDialogOpen(true); }} data-testid={`button-delete-${manufacturer.id}`}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </TableCell>
+                      <div className="flex gap-1 mt-2">
+                        <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleEdit(manufacturer); }} data-testid={`button-edit-mobile-${manufacturer.id}`}>
+                          <Edit className="h-3 w-3 mr-1" />
+                          Edit
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setManufacturerToDelete(manufacturer); setDeleteDialogOpen(true); }} data-testid={`button-delete-mobile-${manufacturer.id}`}>
+                          <Trash2 className="h-3 w-3 mr-1 text-destructive" />
+                          Delete
+                        </Button>
+                      </div>
                     )}
-                  </TableRow>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

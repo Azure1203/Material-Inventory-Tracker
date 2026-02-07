@@ -111,11 +111,11 @@ export default function ProductGroups() {
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Product Groups</h1>
-          <p className="text-muted-foreground">Manage product group categories</p>
+          <h1 className="text-xl sm:text-2xl font-bold">Product Groups</h1>
+          <p className="text-sm text-muted-foreground">Manage product group categories</p>
         </div>
         {isAdmin && (
           <Button onClick={handleAddNew} data-testid="button-add-product-group">
@@ -139,33 +139,56 @@ export default function ProductGroups() {
               <p className="text-muted-foreground">No product groups yet. Add your first product group!</p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  {isAdmin && <TableHead className="w-[100px]">Actions</TableHead>}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              <div className="hidden sm:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      {isAdmin && <TableHead className="w-[100px]">Actions</TableHead>}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {productGroups?.map(productGroup => (
+                      <TableRow key={productGroup.id} data-testid={`product-group-row-${productGroup.id}`}>
+                        <TableCell className="font-medium">{productGroup.name}</TableCell>
+                        {isAdmin && (
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button variant="ghost" size="icon" onClick={() => handleEdit(productGroup)} data-testid={`button-edit-${productGroup.id}`}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => { setProductGroupToDelete(productGroup); setDeleteDialogOpen(true); }} data-testid={`button-delete-${productGroup.id}`}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="sm:hidden divide-y">
                 {productGroups?.map(productGroup => (
-                  <TableRow key={productGroup.id} data-testid={`product-group-row-${productGroup.id}`}>
-                    <TableCell className="font-medium">{productGroup.name}</TableCell>
-                    {isAdmin && (
-                      <TableCell>
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => handleEdit(productGroup)} data-testid={`button-edit-${productGroup.id}`}>
+                  <div key={productGroup.id} data-testid={`product-group-card-${productGroup.id}`} className="p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-medium text-sm">{productGroup.name}</p>
+                      {isAdmin && (
+                        <div className="flex gap-1 shrink-0">
+                          <Button variant="ghost" size="icon" onClick={() => handleEdit(productGroup)} data-testid={`button-edit-mobile-${productGroup.id}`}>
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => { setProductGroupToDelete(productGroup); setDeleteDialogOpen(true); }} data-testid={`button-delete-${productGroup.id}`}>
+                          <Button variant="ghost" size="icon" onClick={() => { setProductGroupToDelete(productGroup); setDeleteDialogOpen(true); }} data-testid={`button-delete-mobile-${productGroup.id}`}>
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </div>
-                      </TableCell>
-                    )}
-                  </TableRow>
+                      )}
+                    </div>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
