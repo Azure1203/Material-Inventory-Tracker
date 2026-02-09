@@ -230,6 +230,24 @@ export default function Dashboard() {
         ))}
       </div>
 
+      <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-1">
+        <span className="text-sm font-medium text-muted-foreground mr-1 shrink-0">
+          <Building2 className="h-4 w-4 inline mr-1" />
+          Supplier:
+        </span>
+        {suppliers?.map(s => (
+          <Button
+            key={s.id}
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(`/materials?supplier=${s.id}`)}
+            data-testid={`button-filter-supplier-${s.id}`}
+          >
+            {s.name}
+          </Button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {stats.map((stat) => (
           <Card
