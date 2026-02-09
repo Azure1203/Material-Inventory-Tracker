@@ -174,7 +174,7 @@ export default function Dashboard() {
                       {material.inStock ? (
                         <Badge variant="secondary" className="shrink-0 text-xs">Stock</Badge>
                       ) : (
-                        <Badge variant="outline" className="shrink-0 text-xs">Non-Stock</Badge>
+                        <Badge variant="outline" className="shrink-0 text-xs">Non-Stock, 6-12 Week Leadtime</Badge>
                       )}
                     </div>
                   ))}

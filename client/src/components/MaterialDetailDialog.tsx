@@ -96,7 +96,7 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
               label="Stock Type" 
               value={
                 <Badge variant={material.inStock ? "default" : "secondary"} data-testid="badge-stock-type">
-                  {material.inStock ? "Stock Item" : "Non-Stock (Special Order)"}
+                  {material.inStock ? "Stock Item" : "Non-Stock, 6-12 Week Leadtime"}
                 </Badge>
               }
               testId="text-stock-type"

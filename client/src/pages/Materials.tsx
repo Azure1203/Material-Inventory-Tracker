@@ -191,7 +191,7 @@ export default function Materials() {
                 <SelectContent>
                   <SelectItem value="all">All Materials</SelectItem>
                   <SelectItem value="stock">Stock Items</SelectItem>
-                  <SelectItem value="non-stock">Non-Stock</SelectItem>
+                  <SelectItem value="non-stock">Non-Stock, 6-12 Week Leadtime</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -364,7 +364,7 @@ export default function Materials() {
                         </TableCell>
                         <TableCell>
                           <Badge variant={material.inStock ? "default" : "secondary"}>
-                            {material.inStock ? "Stock" : "Non-Stock"}
+                            {material.inStock ? "Stock" : "Non-Stock, 6-12 Week Leadtime"}
                           </Badge>
                         </TableCell>
                         {isAdmin && (
@@ -432,7 +432,7 @@ export default function Materials() {
                               {getCostLevelDisplay(material.costLevel)}
                             </span>
                             <Badge variant={material.inStock ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
-                              {material.inStock ? "Stock" : "Non-Stock"}
+                              {material.inStock ? "Stock" : "Non-Stock, 6-12 Week Leadtime"}
                             </Badge>
                           </div>
                         </div>
