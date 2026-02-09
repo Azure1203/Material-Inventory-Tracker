@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getCostLevelDisplay, getCostLevelColor } from "@/lib/utils";
 import { ExternalLink, Edit, X, Info } from "lucide-react";
 import type { MaterialWithRelations } from "@shared/schema";
@@ -12,6 +13,39 @@ interface MaterialDetailDialogProps {
   onOpenChange: (open: boolean) => void;
   material: MaterialWithRelations | null;
   onEdit?: (material: MaterialWithRelations) => void;
+}
+
+function DetailImage({ src, alt, onClick }: { src: string; alt: string; onClick: () => void }) {
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    if (imgRef.current?.complete && imgRef.current.naturalWidth > 0) {
+      setLoaded(true);
+    }
+  }, []);
+
+  if (error) return null;
+
+  return (
+    <div className="flex justify-center">
+      <div className="max-h-48 rounded-lg border overflow-hidden bg-muted inline-flex relative">
+        {!loaded && <Skeleton className="h-48 w-48 rounded-lg" />}
+        <img
+          ref={imgRef}
+          src={src}
+          alt={alt}
+          loading="lazy"
+          className={`max-h-48 rounded-lg object-contain cursor-pointer transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
+          onClick={onClick}
+          onLoad={() => setLoaded(true)}
+          onError={() => setError(true)}
+          data-testid="img-material"
+        />
+      </div>
+    </div>
+  );
 }
 
 export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: MaterialDetailDialogProps) {
@@ -63,15 +97,11 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
 
         <div className="space-y-6 mt-4">
           {material.imageUrl && (
-            <div className="flex justify-center">
-              <img 
-                src={material.imageUrl} 
-                alt={material.name}
-                className="max-h-48 rounded-lg border object-contain cursor-pointer"
-                onClick={() => setShowLightbox(true)}
-                data-testid="img-material"
-              />
-            </div>
+            <DetailImage
+              src={material.imageUrl}
+              alt={material.name}
+              onClick={() => setShowLightbox(true)}
+            />
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">

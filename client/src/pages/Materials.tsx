@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSearch } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +17,43 @@ import { MaterialDetailDialog } from "@/components/MaterialDetailDialog";
 import { Plus, Search, Edit, Trash2, ExternalLink, Package, Filter, X, Info } from "lucide-react";
 import type { MaterialWithRelations, Supplier, Manufacturer, ProductGroup } from "@shared/schema";
 import { useAdminAuth } from "@/lib/adminAuth";
+
+function LazyImage({ src, alt, className, sizeClass, onClick }: { src: string; alt: string; className?: string; sizeClass: string; onClick?: () => void }) {
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    if (imgRef.current?.complete && imgRef.current.naturalWidth > 0) {
+      setLoaded(true);
+    }
+  }, []);
+
+  if (error) {
+    return (
+      <div className={`${sizeClass} rounded-md bg-muted flex items-center justify-center`}>
+        <Package className="h-5 w-5 text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <div className={`${sizeClass} rounded-md border overflow-hidden bg-muted relative ${className || ""}`}>
+      {!loaded && <Skeleton className={`absolute inset-0 ${sizeClass} rounded-md`} />}
+      <img
+        ref={imgRef}
+        src={src}
+        alt={alt}
+        loading="lazy"
+        className={`${sizeClass} object-cover transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
+        onLoad={() => setLoaded(true)}
+        onError={() => setError(true)}
+        onClick={onClick}
+        style={onClick ? { cursor: "pointer" } : undefined}
+      />
+    </div>
+  );
+}
 
 export default function Materials() {
   const searchString = useSearch();
@@ -298,11 +335,7 @@ export default function Materials() {
                       >
                         <TableCell>
                           {material.imageUrl ? (
-                            <img 
-                              src={material.imageUrl} 
-                              alt={material.name}
-                              className="h-10 w-10 rounded-md object-cover border"
-                            />
+                            <LazyImage src={material.imageUrl} alt={material.name} sizeClass="h-10 w-10" />
                           ) : (
                             <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center">
                               <Package className="h-5 w-5 text-muted-foreground" />
@@ -405,11 +438,7 @@ export default function Materials() {
                   >
                     <div className="flex gap-3">
                       {material.imageUrl ? (
-                        <img 
-                          src={material.imageUrl} 
-                          alt={material.name}
-                          className="h-12 w-12 rounded-md object-cover border shrink-0"
-                        />
+                        <LazyImage src={material.imageUrl} alt={material.name} sizeClass="h-12 w-12" className="shrink-0" />
                       ) : (
                         <div className="h-12 w-12 rounded-md bg-muted flex items-center justify-center shrink-0">
                           <Package className="h-5 w-5 text-muted-foreground" />
