@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -204,14 +205,14 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
       </DialogContent>
     </Dialog>
 
-    {showLightbox && material.imageUrl && (
+    {showLightbox && material.imageUrl && createPortal(
       <div 
-        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90"
+        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90"
         onClick={() => setShowLightbox(false)}
         data-testid="lightbox-overlay"
       >
         <button
-          className="absolute top-4 right-4 z-[101] flex items-center gap-2 rounded-full bg-white/20 backdrop-blur-sm px-4 py-2 text-white text-sm font-medium transition-colors hover:bg-white/30 active:bg-white/40"
+          className="absolute top-4 right-4 z-[10000] flex items-center gap-2 rounded-full bg-white/20 backdrop-blur-sm px-4 py-2 text-white text-sm font-medium transition-colors hover:bg-white/30 active:bg-white/40"
           onClick={(e) => { e.stopPropagation(); setShowLightbox(false); }}
           data-testid="button-close-lightbox"
         >
@@ -228,7 +229,8 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
           onClick={(e) => e.stopPropagation()}
           data-testid="img-material-fullsize"
         />
-      </div>
+      </div>,
+      document.body
     )}
     </>
   );
