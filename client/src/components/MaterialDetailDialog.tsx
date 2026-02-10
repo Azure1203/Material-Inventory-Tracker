@@ -49,23 +49,57 @@ function DetailImage({ src, alt, onClick }: { src: string; alt: string; onClick:
   );
 }
 
+function Lightbox({ src, alt, onClose }: { src: string; alt: string; onClose: () => void }) {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90"
+      onClick={onClose}
+      data-testid="lightbox-overlay"
+    >
+      <button
+        className="absolute top-4 right-4 z-[10000] flex items-center gap-2 rounded-full bg-white/20 backdrop-blur-sm px-4 py-2 text-white text-sm font-medium transition-colors hover:bg-white/30 active:bg-white/40"
+        onClick={(e) => { e.stopPropagation(); onClose(); }}
+        data-testid="button-close-lightbox"
+      >
+        <X className="h-5 w-5" />
+        Close
+      </button>
+      <p className="absolute bottom-6 left-0 right-0 text-center text-white/60 text-sm pointer-events-none">
+        Tap anywhere to close
+      </p>
+      <img
+        src={src}
+        alt={alt}
+        className="max-h-[85vh] max-w-[90vw] object-contain rounded-lg"
+        onClick={(e) => e.stopPropagation()}
+        data-testid="img-material-fullsize"
+      />
+    </div>,
+    document.body
+  );
+}
+
 export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: MaterialDetailDialogProps) {
   const [showLightbox, setShowLightbox] = useState(false);
 
-  const closeLightbox = useCallback(() => setShowLightbox(false), []);
+  const handleImageClick = useCallback(() => {
+    setShowLightbox(true);
+  }, []);
 
-  useEffect(() => {
-    if (!showLightbox) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.stopImmediatePropagation();
-        e.preventDefault();
-        closeLightbox();
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown, true);
-    return () => document.removeEventListener("keydown", handleKeyDown, true);
-  }, [showLightbox, closeLightbox]);
+  const handleLightboxClose = useCallback(() => {
+    setShowLightbox(false);
+  }, []);
 
   if (!material) return null;
 
@@ -77,7 +111,7 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
 
   return (
     <>
-    <Dialog open={open} onOpenChange={(v) => { if (!showLightbox) onOpenChange(v); }}>
+    <Dialog open={open && !showLightbox} onOpenChange={(v) => { if (!showLightbox) onOpenChange(v); }}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full" data-testid="dialog-material-detail">
         <DialogHeader>
           <div className="flex items-start justify-between gap-4">
@@ -105,7 +139,7 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
             <DetailImage
               src={material.imageUrl}
               alt={material.name}
-              onClick={() => setShowLightbox(true)}
+              onClick={handleImageClick}
             />
           )}
 
@@ -209,32 +243,12 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
       </DialogContent>
     </Dialog>
 
-    {showLightbox && material.imageUrl && createPortal(
-      <div 
-        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90"
-        onClick={() => setShowLightbox(false)}
-        data-testid="lightbox-overlay"
-      >
-        <button
-          className="absolute top-4 right-4 z-[10000] flex items-center gap-2 rounded-full bg-white/20 backdrop-blur-sm px-4 py-2 text-white text-sm font-medium transition-colors hover:bg-white/30 active:bg-white/40"
-          onClick={(e) => { e.stopPropagation(); setShowLightbox(false); }}
-          data-testid="button-close-lightbox"
-        >
-          <X className="h-5 w-5" />
-          Close
-        </button>
-        <p className="absolute bottom-6 left-0 right-0 text-center text-white/60 text-sm pointer-events-none">
-          Tap anywhere to close
-        </p>
-        <img 
-          src={material.imageUrl} 
-          alt={material.name}
-          className="max-h-[85vh] max-w-[90vw] object-contain rounded-lg"
-          onClick={(e) => e.stopPropagation()}
-          data-testid="img-material-fullsize"
-        />
-      </div>,
-      document.body
+    {showLightbox && material.imageUrl && (
+      <Lightbox
+        src={material.imageUrl}
+        alt={material.name}
+        onClose={handleLightboxClose}
+      />
     )}
     </>
   );
