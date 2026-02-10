@@ -57,10 +57,14 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
   useEffect(() => {
     if (!showLightbox) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeLightbox();
+      if (e.key === "Escape") {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        closeLightbox();
+      }
     };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown, true);
+    return () => document.removeEventListener("keydown", handleKeyDown, true);
   }, [showLightbox, closeLightbox]);
 
   if (!material) return null;
@@ -73,7 +77,7 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
 
   return (
     <>
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(v) => { if (!showLightbox) onOpenChange(v); }}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full" data-testid="dialog-material-detail">
         <DialogHeader>
           <div className="flex items-start justify-between gap-4">
