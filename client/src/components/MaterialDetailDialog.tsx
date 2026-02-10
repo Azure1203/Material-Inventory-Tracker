@@ -206,23 +206,25 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
 
     {showLightbox && material.imageUrl && (
       <div 
-        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80"
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90"
         onClick={() => setShowLightbox(false)}
         data-testid="lightbox-overlay"
       >
-        <Button
-          size="icon"
-          variant="ghost"
-          className="absolute top-4 right-4 text-white"
+        <button
+          className="absolute top-4 right-4 z-[101] flex items-center gap-2 rounded-full bg-white/20 backdrop-blur-sm px-4 py-2 text-white text-sm font-medium transition-colors hover:bg-white/30 active:bg-white/40"
           onClick={(e) => { e.stopPropagation(); setShowLightbox(false); }}
           data-testid="button-close-lightbox"
         >
-          <X className="h-6 w-6" />
-        </Button>
+          <X className="h-5 w-5" />
+          Close
+        </button>
+        <p className="absolute bottom-6 left-0 right-0 text-center text-white/60 text-sm pointer-events-none">
+          Tap anywhere to close
+        </p>
         <img 
           src={material.imageUrl} 
           alt={material.name}
-          className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
+          className="max-h-[85vh] max-w-[90vw] object-contain rounded-lg"
           onClick={(e) => e.stopPropagation()}
           data-testid="img-material-fullsize"
         />
