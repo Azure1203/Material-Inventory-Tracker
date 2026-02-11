@@ -64,25 +64,20 @@ function Lightbox({ src, alt, onClose }: { src: string; alt: string; onClose: ()
   return createPortal(
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90"
-      onClick={onClose}
       data-testid="lightbox-overlay"
     >
       <button
         className="absolute top-4 right-4 z-[10000] flex items-center gap-2 rounded-full bg-white/20 backdrop-blur-sm px-4 py-2 text-white text-sm font-medium transition-colors hover:bg-white/30 active:bg-white/40"
-        onClick={(e) => { e.stopPropagation(); onClose(); }}
+        onClick={onClose}
         data-testid="button-close-lightbox"
       >
         <X className="h-5 w-5" />
         Close
       </button>
-      <p className="absolute bottom-6 left-0 right-0 text-center text-white/60 text-sm pointer-events-none">
-        Tap anywhere to close
-      </p>
       <img
         src={src}
         alt={alt}
         className="max-h-[85vh] max-w-[90vw] object-contain rounded-lg"
-        onClick={(e) => e.stopPropagation()}
         data-testid="img-material-fullsize"
       />
     </div>,
