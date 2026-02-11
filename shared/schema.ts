@@ -7,6 +7,7 @@ import { z } from "zod";
 export const suppliers = pgTable("suppliers", {
   id: serial("id").primaryKey(),
   name: text("name").notNull().unique(),
+  logoUrl: text("logo_url"),
 });
 
 export const suppliersRelations = relations(suppliers, ({ many }) => ({
@@ -22,6 +23,7 @@ export const manufacturers = pgTable("manufacturers", {
   id: serial("id").primaryKey(),
   name: text("name").notNull().unique(),
   websiteUrl: text("website_url"),
+  logoUrl: text("logo_url"),
 });
 
 export const manufacturersRelations = relations(manufacturers, ({ many }) => ({
