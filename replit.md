@@ -94,6 +94,18 @@ The schema defines a hierarchical structure:
 - Dashboard features a manufacturer filter (button row) that filters all stats, product group breakdowns, and cost level breakdowns
 - Clicking through to Materials from a filtered dashboard preserves the manufacturer filter as a URL parameter
 
+### Logo Uploads
+- Manufacturers and Suppliers both support logo image uploads via the same presigned URL flow used for material images
+- Logos are stored in object storage and referenced via `logoUrl` field on each entity
+- Dashboard filter buttons display logos inline (4x4 on mobile, same on desktop) next to entity names
+- Manufacturers/Suppliers list pages show logos in table rows (8x8 desktop, 7x7 mobile cards)
+
+### Image Performance
+- Server-side in-memory cache (30min TTL, max 100 entries, max 5MB per entry) for object storage images
+- Eliminates repeated GCS API round-trips (metadata fetch + ACL check + stream) for cached images
+- Browser Cache-Control set to `public, max-age=86400` (24 hours)
+- Frontend uses `loading="lazy"` + `decoding="async"` on img tags with skeleton placeholders
+
 ### Technical Notes
 - SelectItem components cannot use empty string values due to Radix Select requirements. Use "all" or similar non-empty placeholder values for "All items" options.
 - Object storage routes use regex pattern `/^\/objects\/(.+)$/` for Express 5 compatibility with nested paths

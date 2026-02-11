@@ -12,10 +12,11 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Plus, Edit, Trash2, Factory, Loader2, ExternalLink, ArrowRight } from "lucide-react";
+import { Plus, Edit, Trash2, Factory, Loader2, ExternalLink, ArrowRight, Upload, X, ImageIcon } from "lucide-react";
 import { useLocation } from "wouter";
 import { insertManufacturerSchema, type Manufacturer, type InsertManufacturer } from "@shared/schema";
 import { useAdminAuth } from "@/lib/adminAuth";
+import { useUpload } from "@/hooks/use-upload";
 
 const manufacturerFormSchema = insertManufacturerSchema.extend({
   name: insertManufacturerSchema.shape.name.min(1, "Name is required"),
@@ -40,8 +41,26 @@ export default function Manufacturers() {
 
   const form = useForm<ManufacturerFormData>({
     resolver: zodResolver(manufacturerFormSchema),
-    defaultValues: { name: "", websiteUrl: "" },
+    defaultValues: { name: "", websiteUrl: "", logoUrl: "" },
   });
+
+  const { uploadFile, isUploading: isUploadingLogo } = useUpload({
+    onSuccess: (response) => {
+      form.setValue("logoUrl", response.objectPath);
+      toast({ title: "Logo uploaded successfully" });
+    },
+    onError: (error) => {
+      toast({ title: "Upload failed", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const handleLogoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      await uploadFile(file);
+    }
+    e.target.value = "";
+  };
 
   const createMutation = useMutation({
     mutationFn: async (data: ManufacturerFormData) => {
@@ -102,6 +121,7 @@ export default function Manufacturers() {
     setEditingManufacturer(manufacturer);
     form.setValue("name", manufacturer.name);
     form.setValue("websiteUrl", manufacturer.websiteUrl || "");
+    form.setValue("logoUrl", manufacturer.logoUrl || "");
     setDialogOpen(true);
   };
 
@@ -112,6 +132,7 @@ export default function Manufacturers() {
   };
 
   const isPending = createMutation.isPending || updateMutation.isPending;
+  const currentLogoUrl = form.watch("logoUrl");
 
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
@@ -147,6 +168,7 @@ export default function Manufacturers() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-[50px]">Logo</TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Website</TableHead>
                       <TableHead>Materials</TableHead>
@@ -161,6 +183,20 @@ export default function Manufacturers() {
                         className="cursor-pointer hover-elevate"
                         onClick={() => navigate(`/materials?manufacturer=${manufacturer.id}`)}
                       >
+                        <TableCell>
+                          {manufacturer.logoUrl ? (
+                            <img
+                              src={manufacturer.logoUrl}
+                              alt={`${manufacturer.name} logo`}
+                              className="h-8 w-8 rounded-md object-contain bg-muted"
+                              data-testid={`img-manufacturer-logo-${manufacturer.id}`}
+                            />
+                          ) : (
+                            <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center">
+                              <Factory className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                          )}
+                        </TableCell>
                         <TableCell className="font-medium">{manufacturer.name}</TableCell>
                         <TableCell>
                           {manufacturer.websiteUrl ? (
@@ -215,20 +251,33 @@ export default function Manufacturers() {
                     onClick={() => navigate(`/materials?manufacturer=${manufacturer.id}`)}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="font-medium text-sm">{manufacturer.name}</p>
-                        {manufacturer.websiteUrl && (
-                          <a
-                            href={manufacturer.websiteUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-primary text-xs mt-0.5"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                            Website
-                          </a>
+                      <div className="flex items-center gap-2 min-w-0">
+                        {manufacturer.logoUrl ? (
+                          <img
+                            src={manufacturer.logoUrl}
+                            alt={`${manufacturer.name} logo`}
+                            className="h-7 w-7 rounded-md object-contain bg-muted shrink-0"
+                          />
+                        ) : (
+                          <div className="h-7 w-7 rounded-md bg-muted flex items-center justify-center shrink-0">
+                            <Factory className="h-3.5 w-3.5 text-muted-foreground" />
+                          </div>
                         )}
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm">{manufacturer.name}</p>
+                          {manufacturer.websiteUrl && (
+                            <a
+                              href={manufacturer.websiteUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-primary text-xs mt-0.5"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                              Website
+                            </a>
+                          )}
+                        </div>
                       </div>
                       <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
                     </div>
@@ -285,6 +334,68 @@ export default function Manufacturers() {
                   </FormItem>
                 )}
               />
+              <div>
+                <FormLabel>Logo</FormLabel>
+                <div className="mt-1.5">
+                  {currentLogoUrl ? (
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={currentLogoUrl}
+                        alt="Logo preview"
+                        className="h-16 w-16 rounded-md object-contain bg-muted border"
+                        data-testid="img-manufacturer-logo-preview"
+                      />
+                      <div className="flex flex-col gap-1">
+                        <label className="cursor-pointer">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleLogoFileChange}
+                            disabled={isUploadingLogo}
+                            data-testid="input-manufacturer-logo-change"
+                          />
+                          <Button type="button" variant="outline" size="sm" asChild>
+                            <span>
+                              {isUploadingLogo ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Upload className="h-3 w-3 mr-1" />}
+                              Change
+                            </span>
+                          </Button>
+                        </label>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => form.setValue("logoUrl", "")}
+                          data-testid="button-remove-manufacturer-logo"
+                        >
+                          <X className="h-3 w-3 mr-1" />
+                          Remove
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <label className="cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleLogoFileChange}
+                        disabled={isUploadingLogo}
+                        data-testid="input-manufacturer-logo-upload"
+                      />
+                      <div className="flex items-center gap-2 p-3 border border-dashed rounded-md text-sm text-muted-foreground">
+                        {isUploadingLogo ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <ImageIcon className="h-4 w-4" />
+                        )}
+                        <span>{isUploadingLogo ? "Uploading..." : "Click to upload logo"}</span>
+                      </div>
+                    </label>
+                  )}
+                </div>
+              </div>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
                 <Button type="submit" disabled={isPending} data-testid="button-submit-manufacturer">

@@ -225,6 +225,9 @@ export default function Dashboard() {
             }}
             data-testid={`button-filter-manufacturer-${m.id}`}
           >
+            {m.logoUrl ? (
+              <img src={m.logoUrl} alt="" className="h-4 w-4 rounded-sm object-contain shrink-0 mr-1" data-testid={`img-dashboard-manufacturer-logo-${m.id}`} />
+            ) : null}
             {m.name}
           </Button>
         ))}
@@ -243,6 +246,9 @@ export default function Dashboard() {
             onClick={() => navigate(`/materials?supplier=${s.id}`)}
             data-testid={`button-filter-supplier-${s.id}`}
           >
+            {s.logoUrl ? (
+              <img src={s.logoUrl} alt="" className="h-4 w-4 rounded-sm object-contain shrink-0 mr-1" data-testid={`img-dashboard-supplier-logo-${s.id}`} />
+            ) : null}
             {s.name}
           </Button>
         ))}

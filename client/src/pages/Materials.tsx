@@ -45,6 +45,7 @@ function LazyImage({ src, alt, className, sizeClass, onClick }: { src: string; a
         src={src}
         alt={alt}
         loading="lazy"
+        decoding="async"
         className={`${sizeClass} object-cover transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
         onLoad={() => setLoaded(true)}
         onError={() => setError(true)}

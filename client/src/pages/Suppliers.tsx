@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,10 +12,11 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Plus, Edit, Trash2, Building2, Loader2, ArrowRight } from "lucide-react";
+import { Plus, Edit, Trash2, Building2, Loader2, ArrowRight, Upload, X, ImageIcon } from "lucide-react";
 import { useLocation } from "wouter";
 import { insertSupplierSchema, type Supplier, type InsertSupplier } from "@shared/schema";
 import { useAdminAuth } from "@/lib/adminAuth";
+import { useUpload } from "@/hooks/use-upload";
 
 const supplierFormSchema = insertSupplierSchema.extend({
   name: insertSupplierSchema.shape.name.min(1, "Name is required"),
@@ -40,8 +41,26 @@ export default function Suppliers() {
 
   const form = useForm<SupplierFormData>({
     resolver: zodResolver(supplierFormSchema),
-    defaultValues: { name: "" },
+    defaultValues: { name: "", logoUrl: "" },
   });
+
+  const { uploadFile, isUploading: isUploadingLogo } = useUpload({
+    onSuccess: (response) => {
+      form.setValue("logoUrl", response.objectPath);
+      toast({ title: "Logo uploaded successfully" });
+    },
+    onError: (error) => {
+      toast({ title: "Upload failed", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const handleLogoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      await uploadFile(file);
+    }
+    e.target.value = "";
+  };
 
   const createMutation = useMutation({
     mutationFn: async (data: SupplierFormData) => {
@@ -101,6 +120,7 @@ export default function Suppliers() {
   const handleEdit = (supplier: Supplier) => {
     setEditingSupplier(supplier);
     form.setValue("name", supplier.name);
+    form.setValue("logoUrl", supplier.logoUrl || "");
     setDialogOpen(true);
   };
 
@@ -111,6 +131,7 @@ export default function Suppliers() {
   };
 
   const isPending = createMutation.isPending || updateMutation.isPending;
+  const currentLogoUrl = form.watch("logoUrl");
 
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
@@ -146,6 +167,7 @@ export default function Suppliers() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-[50px]">Logo</TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Materials</TableHead>
                       {isAdmin && <TableHead className="w-[100px]">Actions</TableHead>}
@@ -159,6 +181,20 @@ export default function Suppliers() {
                         className="cursor-pointer hover-elevate"
                         onClick={() => navigate(`/materials?supplier=${supplier.id}`)}
                       >
+                        <TableCell>
+                          {supplier.logoUrl ? (
+                            <img
+                              src={supplier.logoUrl}
+                              alt={`${supplier.name} logo`}
+                              className="h-8 w-8 rounded-md object-contain bg-muted"
+                              data-testid={`img-supplier-logo-${supplier.id}`}
+                            />
+                          ) : (
+                            <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center">
+                              <Building2 className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                          )}
+                        </TableCell>
                         <TableCell className="font-medium">{supplier.name}</TableCell>
                         <TableCell>
                           <Button 
@@ -197,7 +233,20 @@ export default function Suppliers() {
                     onClick={() => navigate(`/materials?supplier=${supplier.id}`)}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <p className="font-medium text-sm">{supplier.name}</p>
+                      <div className="flex items-center gap-2 min-w-0">
+                        {supplier.logoUrl ? (
+                          <img
+                            src={supplier.logoUrl}
+                            alt={`${supplier.name} logo`}
+                            className="h-7 w-7 rounded-md object-contain bg-muted shrink-0"
+                          />
+                        ) : (
+                          <div className="h-7 w-7 rounded-md bg-muted flex items-center justify-center shrink-0">
+                            <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                          </div>
+                        )}
+                        <p className="font-medium text-sm">{supplier.name}</p>
+                      </div>
                       <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
                     </div>
                     {isAdmin && (
@@ -240,6 +289,68 @@ export default function Suppliers() {
                   </FormItem>
                 )}
               />
+              <div>
+                <FormLabel>Logo</FormLabel>
+                <div className="mt-1.5">
+                  {currentLogoUrl ? (
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={currentLogoUrl}
+                        alt="Logo preview"
+                        className="h-16 w-16 rounded-md object-contain bg-muted border"
+                        data-testid="img-supplier-logo-preview"
+                      />
+                      <div className="flex flex-col gap-1">
+                        <label className="cursor-pointer">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleLogoFileChange}
+                            disabled={isUploadingLogo}
+                            data-testid="input-supplier-logo-change"
+                          />
+                          <Button type="button" variant="outline" size="sm" asChild>
+                            <span>
+                              {isUploadingLogo ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Upload className="h-3 w-3 mr-1" />}
+                              Change
+                            </span>
+                          </Button>
+                        </label>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => form.setValue("logoUrl", "")}
+                          data-testid="button-remove-supplier-logo"
+                        >
+                          <X className="h-3 w-3 mr-1" />
+                          Remove
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <label className="cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleLogoFileChange}
+                        disabled={isUploadingLogo}
+                        data-testid="input-supplier-logo-upload"
+                      />
+                      <div className="flex items-center gap-2 p-3 border border-dashed rounded-md text-sm text-muted-foreground">
+                        {isUploadingLogo ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <ImageIcon className="h-4 w-4" />
+                        )}
+                        <span>{isUploadingLogo ? "Uploading..." : "Click to upload logo"}</span>
+                      </div>
+                    </label>
+                  )}
+                </div>
+              </div>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
                 <Button type="submit" disabled={isPending} data-testid="button-submit-supplier">

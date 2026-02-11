@@ -1,40 +1,53 @@
 import type { Express } from "express";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 
-/**
- * Register object storage routes for file uploads.
- *
- * This provides example routes for the presigned URL upload flow:
- * 1. POST /api/uploads/request-url - Get a presigned URL for uploading
- * 2. The client then uploads directly to the presigned URL
- *
- * IMPORTANT: These are example routes. Customize based on your use case:
- * - Add authentication middleware for protected uploads
- * - Add file metadata storage (save to database after upload)
- * - Add ACL policies for access control
- */
+interface CachedObject {
+  data: Buffer;
+  contentType: string;
+  cachedAt: number;
+}
+
+const IMAGE_CACHE_TTL_MS = 30 * 60 * 1000;
+const MAX_CACHE_SIZE = 100;
+const MAX_ENTRY_SIZE_BYTES = 5 * 1024 * 1024;
+const imageCache = new Map<string, CachedObject>();
+
+function evictExpiredEntries() {
+  const now = Date.now();
+  const keys = Array.from(imageCache.keys());
+  for (const key of keys) {
+    const entry = imageCache.get(key);
+    if (entry && now - entry.cachedAt > IMAGE_CACHE_TTL_MS) {
+      imageCache.delete(key);
+    }
+  }
+}
+
+function getCachedObject(path: string): CachedObject | null {
+  const entry = imageCache.get(path);
+  if (!entry) return null;
+  if (Date.now() - entry.cachedAt > IMAGE_CACHE_TTL_MS) {
+    imageCache.delete(path);
+    return null;
+  }
+  return entry;
+}
+
+function setCachedObject(path: string, data: Buffer, contentType: string) {
+  if (data.length > MAX_ENTRY_SIZE_BYTES) return;
+  if (imageCache.size >= MAX_CACHE_SIZE) {
+    evictExpiredEntries();
+    if (imageCache.size >= MAX_CACHE_SIZE) {
+      const firstKey = imageCache.keys().next().value;
+      if (firstKey) imageCache.delete(firstKey);
+    }
+  }
+  imageCache.set(path, { data, contentType, cachedAt: Date.now() });
+}
+
 export function registerObjectStorageRoutes(app: Express): void {
   const objectStorageService = new ObjectStorageService();
 
-  /**
-   * Request a presigned URL for file upload.
-   *
-   * Request body (JSON):
-   * {
-   *   "name": "filename.jpg",
-   *   "size": 12345,
-   *   "contentType": "image/jpeg"
-   * }
-   *
-   * Response:
-   * {
-   *   "uploadURL": "https://storage.googleapis.com/...",
-   *   "objectPath": "/objects/uploads/uuid"
-   * }
-   *
-   * IMPORTANT: The client should NOT send the file to this endpoint.
-   * Send JSON metadata only, then upload the file directly to uploadURL.
-   */
   app.post("/api/uploads/request-url", async (req, res) => {
     try {
       const { name, size, contentType } = req.body;
@@ -46,14 +59,11 @@ export function registerObjectStorageRoutes(app: Express): void {
       }
 
       const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-
-      // Extract object path from the presigned URL for later reference
       const objectPath = objectStorageService.normalizeObjectEntityPath(uploadURL);
 
       res.json({
         uploadURL,
         objectPath,
-        // Echo back the metadata for client convenience
         metadata: { name, size, contentType },
       });
     } catch (error) {
@@ -62,16 +72,51 @@ export function registerObjectStorageRoutes(app: Express): void {
     }
   });
 
-  /**
-   * Serve uploaded objects from any path.
-   *
-   * Uses regex pattern for Express 5 compatibility to handle any nested paths.
-   * This matches /objects/* including nested paths like /objects/uploads/abc123
-   */
   app.get(/^\/objects\/(.+)$/, async (req, res) => {
     try {
-      const objectFile = await objectStorageService.getObjectEntityFile(req.path);
-      await objectStorageService.downloadObject(objectFile, res, 86400);
+      const objectPath = req.path;
+
+      const cached = getCachedObject(objectPath);
+      if (cached) {
+        res.set({
+          "Content-Type": cached.contentType,
+          "Content-Length": String(cached.data.length),
+          "Cache-Control": "public, max-age=86400",
+          "X-Cache": "HIT",
+        });
+        return res.send(cached.data);
+      }
+
+      const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
+      const [metadata] = await objectFile.getMetadata();
+      const contentType = (metadata.contentType as string) || "application/octet-stream";
+
+      const chunks: Buffer[] = [];
+      const stream = objectFile.createReadStream();
+
+      stream.on("data", (chunk: Buffer) => {
+        chunks.push(chunk);
+      });
+
+      stream.on("end", () => {
+        const data = Buffer.concat(chunks);
+        setCachedObject(objectPath, data, contentType);
+
+        res.set({
+          "Content-Type": contentType,
+          "Content-Length": String(data.length),
+          "Cache-Control": "public, max-age=86400",
+          "X-Cache": "MISS",
+        });
+        res.send(data);
+      });
+
+      stream.on("error", (err: Error) => {
+        console.error("Stream error:", err);
+        if (!res.headersSent) {
+          res.status(500).json({ error: "Error streaming file" });
+        }
+      });
     } catch (error) {
       console.error("Error serving object:", error);
       if (error instanceof ObjectNotFoundError) {
@@ -81,4 +126,3 @@ export function registerObjectStorageRoutes(app: Express): void {
     }
   });
 }
-
