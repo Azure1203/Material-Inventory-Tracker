@@ -12,7 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Plus, Edit, Trash2, Building2, Loader2, ArrowRight, Upload, X, ImageIcon } from "lucide-react";
+import { Plus, Edit, Trash2, Building2, Loader2, ArrowRight, Upload, X, ImageIcon, MapPin, Phone, Mail } from "lucide-react";
 import { useLocation } from "wouter";
 import { insertSupplierSchema, type Supplier, type InsertSupplier } from "@shared/schema";
 import { useAdminAuth } from "@/lib/adminAuth";
@@ -41,7 +41,7 @@ export default function Suppliers() {
 
   const form = useForm<SupplierFormData>({
     resolver: zodResolver(supplierFormSchema),
-    defaultValues: { name: "", logoUrl: "" },
+    defaultValues: { name: "", logoUrl: "", address: "", phone: "", contactEmail: "" },
   });
 
   const { uploadFile, isUploading: isUploadingLogo } = useUpload({
@@ -121,6 +121,9 @@ export default function Suppliers() {
     setEditingSupplier(supplier);
     form.setValue("name", supplier.name);
     form.setValue("logoUrl", supplier.logoUrl || "");
+    form.setValue("address", supplier.address || "");
+    form.setValue("phone", supplier.phone || "");
+    form.setValue("contactEmail", supplier.contactEmail || "");
     setDialogOpen(true);
   };
 
@@ -169,6 +172,7 @@ export default function Suppliers() {
                     <TableRow>
                       <TableHead className="w-[50px]">Logo</TableHead>
                       <TableHead>Name</TableHead>
+                      <TableHead>Contact</TableHead>
                       <TableHead>Materials</TableHead>
                       {isAdmin && <TableHead className="w-[100px]">Actions</TableHead>}
                     </TableRow>
@@ -195,7 +199,34 @@ export default function Suppliers() {
                             </div>
                           )}
                         </TableCell>
-                        <TableCell className="font-medium">{supplier.name}</TableCell>
+                        <TableCell>
+                          <div className="font-medium">{supplier.name}</div>
+                          {supplier.address && (
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5" data-testid={`text-supplier-address-${supplier.id}`}>
+                              <MapPin className="h-3 w-3 shrink-0" />
+                              <span className="truncate max-w-[200px]">{supplier.address}</span>
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-0.5">
+                            {supplier.phone && (
+                              <div className="flex items-center gap-1 text-sm" data-testid={`text-supplier-phone-${supplier.id}`}>
+                                <Phone className="h-3 w-3 text-muted-foreground shrink-0" />
+                                <a href={`tel:${supplier.phone}`} className="hover:underline" onClick={(e) => e.stopPropagation()} data-testid={`link-supplier-phone-${supplier.id}`}>{supplier.phone}</a>
+                              </div>
+                            )}
+                            {supplier.contactEmail && (
+                              <div className="flex items-center gap-1 text-sm" data-testid={`text-supplier-email-${supplier.id}`}>
+                                <Mail className="h-3 w-3 text-muted-foreground shrink-0" />
+                                <a href={`mailto:${supplier.contactEmail}`} className="hover:underline" onClick={(e) => e.stopPropagation()} data-testid={`link-supplier-email-${supplier.id}`}>{supplier.contactEmail}</a>
+                              </div>
+                            )}
+                            {!supplier.phone && !supplier.contactEmail && (
+                              <span className="text-xs text-muted-foreground">--</span>
+                            )}
+                          </div>
+                        </TableCell>
                         <TableCell>
                           <Button 
                             variant="ghost" 
@@ -249,6 +280,28 @@ export default function Suppliers() {
                       </div>
                       <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
                     </div>
+                    {(supplier.address || supplier.phone || supplier.contactEmail) && (
+                      <div className="mt-1.5 ml-9 space-y-0.5">
+                        {supplier.address && (
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <MapPin className="h-3 w-3 shrink-0" />
+                            <span className="truncate">{supplier.address}</span>
+                          </div>
+                        )}
+                        {supplier.phone && (
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Phone className="h-3 w-3 shrink-0" />
+                            <a href={`tel:${supplier.phone}`} className="hover:underline" onClick={(e) => e.stopPropagation()} data-testid={`link-supplier-phone-mobile-${supplier.id}`}>{supplier.phone}</a>
+                          </div>
+                        )}
+                        {supplier.contactEmail && (
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Mail className="h-3 w-3 shrink-0" />
+                            <a href={`mailto:${supplier.contactEmail}`} className="hover:underline" onClick={(e) => e.stopPropagation()} data-testid={`link-supplier-email-mobile-${supplier.id}`}>{supplier.contactEmail}</a>
+                          </div>
+                        )}
+                      </div>
+                    )}
                     {isAdmin && (
                       <div className="flex gap-1 mt-2">
                         <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleEdit(supplier); }} data-testid={`button-edit-mobile-${supplier.id}`}>
@@ -351,6 +404,45 @@ export default function Suppliers() {
                   )}
                 </div>
               </div>
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Address</FormLabel>
+                    <FormControl>
+                      <Input placeholder="123 Main St, City, Province" {...field} value={field.value || ""} data-testid="input-supplier-address" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="(555) 123-4567" {...field} value={field.value || ""} data-testid="input-supplier-phone" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="contactEmail"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Contact Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="contact@supplier.com" {...field} value={field.value || ""} data-testid="input-supplier-email" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
                 <Button type="submit" disabled={isPending} data-testid="button-submit-supplier">
