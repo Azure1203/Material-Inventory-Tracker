@@ -201,57 +201,58 @@ export default function Dashboard() {
         <span>Cost category is meant to serve as a guideline only.</span>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-1">
-        <span className="text-sm font-medium text-muted-foreground mr-1 shrink-0">
-          <Factory className="h-4 w-4 inline mr-1" />
-          Manufacturer:
+      <div>
+        <span className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-1">
+          <Factory className="h-4 w-4" />
+          Manufacturer
         </span>
-        <Button
-          variant={manufacturerFilter === null ? "default" : "outline"}
-          size="sm"
-          onClick={() => setManufacturerFilter(null)}
-          data-testid="button-filter-manufacturer-all"
-        >
-          All
-        </Button>
-        {manufacturers?.map(m => (
+        <div className="flex flex-wrap gap-2">
           <Button
-            key={m.id}
-            variant={manufacturerFilter === m.id ? "default" : "outline"}
-            size="sm"
-            onClick={() => {
-              setManufacturerFilter(m.id);
-              navigate(`/materials?manufacturer=${m.id}`);
-            }}
-            data-testid={`button-filter-manufacturer-${m.id}`}
+            variant={manufacturerFilter === null ? "default" : "outline"}
+            onClick={() => setManufacturerFilter(null)}
+            data-testid="button-filter-manufacturer-all"
           >
-            {m.logoUrl ? (
-              <img src={m.logoUrl} alt="" className="h-4 w-4 rounded-sm object-contain shrink-0 mr-1" data-testid={`img-dashboard-manufacturer-logo-${m.id}`} />
-            ) : null}
-            {m.name}
+            All
           </Button>
-        ))}
+          {manufacturers?.map(m => (
+            <Button
+              key={m.id}
+              variant={manufacturerFilter === m.id ? "default" : "outline"}
+              onClick={() => {
+                setManufacturerFilter(m.id);
+                navigate(`/materials?manufacturer=${m.id}`);
+              }}
+              data-testid={`button-filter-manufacturer-${m.id}`}
+            >
+              {m.logoUrl ? (
+                <img src={m.logoUrl} alt="" className="h-5 w-5 rounded-sm object-contain shrink-0 mr-1.5" data-testid={`img-dashboard-manufacturer-logo-${m.id}`} />
+              ) : null}
+              {m.name}
+            </Button>
+          ))}
+        </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-1">
-        <span className="text-sm font-medium text-muted-foreground mr-1 shrink-0">
-          <Building2 className="h-4 w-4 inline mr-1" />
-          Supplier:
+      <div>
+        <span className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-1">
+          <Building2 className="h-4 w-4" />
+          Supplier
         </span>
-        {suppliers?.map(s => (
-          <Button
-            key={s.id}
-            variant="outline"
-            size="sm"
-            onClick={() => navigate(`/materials?supplier=${s.id}`)}
-            data-testid={`button-filter-supplier-${s.id}`}
-          >
-            {s.logoUrl ? (
-              <img src={s.logoUrl} alt="" className="h-4 w-4 rounded-sm object-contain shrink-0 mr-1" data-testid={`img-dashboard-supplier-logo-${s.id}`} />
-            ) : null}
-            {s.name}
-          </Button>
-        ))}
+        <div className="flex flex-wrap gap-2">
+          {suppliers?.map(s => (
+            <Button
+              key={s.id}
+              variant="outline"
+              onClick={() => navigate(`/materials?supplier=${s.id}`)}
+              data-testid={`button-filter-supplier-${s.id}`}
+            >
+              {s.logoUrl ? (
+                <img src={s.logoUrl} alt="" className="h-5 w-5 rounded-sm object-contain shrink-0 mr-1.5" data-testid={`img-dashboard-supplier-logo-${s.id}`} />
+              ) : null}
+              {s.name}
+            </Button>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
