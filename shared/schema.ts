@@ -8,6 +8,9 @@ export const suppliers = pgTable("suppliers", {
   id: serial("id").primaryKey(),
   name: text("name").notNull().unique(),
   logoUrl: text("logo_url"),
+  address: text("address"),
+  phone: text("phone"),
+  contactEmail: text("contact_email"),
 });
 
 export const suppliersRelations = relations(suppliers, ({ many }) => ({
