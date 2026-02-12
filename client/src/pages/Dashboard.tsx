@@ -330,7 +330,11 @@ export default function Dashboard() {
               Materials by Cost Level
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
+            <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-xs text-muted-foreground" data-testid="notice-cost-guideline-breakdown">
+              <Info className="h-4 w-4 shrink-0" />
+              <span>Cost category is meant to serve as a guideline only.</span>
+            </div>
             {isLoading ? (
               <div className="space-y-3">
                 {[1, 2, 3].map(i => (
