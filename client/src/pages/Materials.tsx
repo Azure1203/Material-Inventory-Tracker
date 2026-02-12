@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { getCostLevelDisplay, getCostLevelColor } from "@/lib/utils";
+import { getCostLevelDisplay, getCostLevelColor, thumbUrl } from "@/lib/utils";
 import { MaterialDialog } from "@/components/MaterialDialog";
 import { MaterialDetailDialog } from "@/components/MaterialDetailDialog";
 import { Plus, Search, Edit, Trash2, ExternalLink, Package, Filter, X, Info } from "lucide-react";
@@ -19,6 +19,7 @@ import type { MaterialWithRelations, Supplier, Manufacturer, ProductGroup } from
 import { useAdminAuth } from "@/lib/adminAuth";
 
 function LazyImage({ src, alt, className, sizeClass, onClick }: { src: string; alt: string; className?: string; sizeClass: string; onClick?: () => void }) {
+  const thumbSrc = useMemo(() => thumbUrl(src, 96), [src]);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -42,7 +43,7 @@ function LazyImage({ src, alt, className, sizeClass, onClick }: { src: string; a
       {!loaded && <Skeleton className={`absolute inset-0 ${sizeClass} rounded-md`} />}
       <img
         ref={imgRef}
-        src={src}
+        src={thumbSrc}
         alt={alt}
         loading="lazy"
         decoding="async"

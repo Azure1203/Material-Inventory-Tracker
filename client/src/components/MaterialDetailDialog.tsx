@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getCostLevelDisplay, getCostLevelColor } from "@/lib/utils";
+import { getCostLevelDisplay, getCostLevelColor, thumbUrl } from "@/lib/utils";
 import { ExternalLink, Edit, X, Info } from "lucide-react";
 import type { MaterialWithRelations } from "@shared/schema";
 
@@ -35,7 +35,7 @@ function DetailImage({ src, alt, onClick }: { src: string; alt: string; onClick:
         {!loaded && <Skeleton className="h-48 w-48 rounded-lg" />}
         <img
           ref={imgRef}
-          src={src}
+          src={thumbUrl(src, 400)}
           alt={alt}
           loading="lazy"
           className={`max-h-48 rounded-lg object-contain cursor-pointer transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}

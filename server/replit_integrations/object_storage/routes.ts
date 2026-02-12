@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import sharp from "sharp";
 
 interface CachedObject {
   data: Buffer;
@@ -8,7 +9,7 @@ interface CachedObject {
 }
 
 const IMAGE_CACHE_TTL_MS = 30 * 60 * 1000;
-const MAX_CACHE_SIZE = 100;
+const MAX_CACHE_SIZE = 200;
 const MAX_ENTRY_SIZE_BYTES = 5 * 1024 * 1024;
 const imageCache = new Map<string, CachedObject>();
 
@@ -23,17 +24,17 @@ function evictExpiredEntries() {
   }
 }
 
-function getCachedObject(path: string): CachedObject | null {
-  const entry = imageCache.get(path);
+function getCachedObject(cacheKey: string): CachedObject | null {
+  const entry = imageCache.get(cacheKey);
   if (!entry) return null;
   if (Date.now() - entry.cachedAt > IMAGE_CACHE_TTL_MS) {
-    imageCache.delete(path);
+    imageCache.delete(cacheKey);
     return null;
   }
   return entry;
 }
 
-function setCachedObject(path: string, data: Buffer, contentType: string) {
+function setCachedObject(cacheKey: string, data: Buffer, contentType: string) {
   if (data.length > MAX_ENTRY_SIZE_BYTES) return;
   if (imageCache.size >= MAX_CACHE_SIZE) {
     evictExpiredEntries();
@@ -42,7 +43,34 @@ function setCachedObject(path: string, data: Buffer, contentType: string) {
       if (firstKey) imageCache.delete(firstKey);
     }
   }
-  imageCache.set(path, { data, contentType, cachedAt: Date.now() });
+  imageCache.set(cacheKey, { data, contentType, cachedAt: Date.now() });
+}
+
+const ALLOWED_WIDTHS = [48, 64, 96, 128, 200, 400];
+
+function getAllowedWidth(requested: number): number | null {
+  const clamped = Math.min(Math.max(requested, 32), 800);
+  let closest = ALLOWED_WIDTHS[0];
+  for (const w of ALLOWED_WIDTHS) {
+    if (w >= clamped) {
+      closest = w;
+      break;
+    }
+    closest = w;
+  }
+  return closest;
+}
+
+async function resizeImage(data: Buffer, width: number, originalContentType: string): Promise<{ data: Buffer; contentType: string }> {
+  const pipeline = sharp(data).resize(width, undefined, { fit: "inside", withoutEnlargement: true });
+
+  if (originalContentType === "image/png" || originalContentType === "image/svg+xml") {
+    const resized = await pipeline.png({ quality: 80 }).toBuffer();
+    return { data: resized, contentType: "image/png" };
+  }
+
+  const resized = await pipeline.jpeg({ quality: 80 }).toBuffer();
+  return { data: resized, contentType: "image/jpeg" };
 }
 
 export function registerObjectStorageRoutes(app: Express): void {
@@ -75,8 +103,12 @@ export function registerObjectStorageRoutes(app: Express): void {
   app.get(/^\/objects\/(.+)$/, async (req, res) => {
     try {
       const objectPath = req.path;
+      const requestedWidth = req.query.w ? parseInt(req.query.w as string, 10) : null;
+      const thumbWidth = requestedWidth && !isNaN(requestedWidth) ? getAllowedWidth(requestedWidth) : null;
 
-      const cached = getCachedObject(objectPath);
+      const cacheKey = thumbWidth ? `${objectPath}?w=${thumbWidth}` : objectPath;
+
+      const cached = getCachedObject(cacheKey);
       if (cached) {
         res.set({
           "Content-Type": cached.contentType,
@@ -87,36 +119,53 @@ export function registerObjectStorageRoutes(app: Express): void {
         return res.send(cached.data);
       }
 
-      const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
-      const [metadata] = await objectFile.getMetadata();
-      const contentType = (metadata.contentType as string) || "application/octet-stream";
+      const fullCached = thumbWidth ? getCachedObject(objectPath) : null;
+      let fullData: Buffer;
+      let originalContentType: string;
 
-      const chunks: Buffer[] = [];
-      const stream = objectFile.createReadStream();
+      if (fullCached) {
+        fullData = fullCached.data;
+        originalContentType = fullCached.contentType;
+      } else {
+        const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
+        const [metadata] = await objectFile.getMetadata();
+        originalContentType = (metadata.contentType as string) || "application/octet-stream";
 
-      stream.on("data", (chunk: Buffer) => {
-        chunks.push(chunk);
-      });
-
-      stream.on("end", () => {
-        const data = Buffer.concat(chunks);
-        setCachedObject(objectPath, data, contentType);
-
-        res.set({
-          "Content-Type": contentType,
-          "Content-Length": String(data.length),
-          "Cache-Control": "public, max-age=86400",
-          "X-Cache": "MISS",
+        const chunks: Buffer[] = [];
+        fullData = await new Promise<Buffer>((resolve, reject) => {
+          const stream = objectFile.createReadStream();
+          stream.on("data", (chunk: Buffer) => chunks.push(chunk));
+          stream.on("end", () => resolve(Buffer.concat(chunks)));
+          stream.on("error", reject);
         });
-        res.send(data);
-      });
 
-      stream.on("error", (err: Error) => {
-        console.error("Stream error:", err);
-        if (!res.headersSent) {
-          res.status(500).json({ error: "Error streaming file" });
+        setCachedObject(objectPath, fullData, originalContentType);
+      }
+
+      if (thumbWidth && originalContentType.startsWith("image/")) {
+        try {
+          const { data: resizedData, contentType: resizedType } = await resizeImage(fullData, thumbWidth, originalContentType);
+          setCachedObject(cacheKey, resizedData, resizedType);
+
+          res.set({
+            "Content-Type": resizedType,
+            "Content-Length": String(resizedData.length),
+            "Cache-Control": "public, max-age=86400",
+            "X-Cache": "MISS",
+          });
+          return res.send(resizedData);
+        } catch (resizeErr) {
+          console.error("Resize error, serving original:", resizeErr);
         }
+      }
+
+      res.set({
+        "Content-Type": originalContentType,
+        "Content-Length": String(fullData.length),
+        "Cache-Control": "public, max-age=86400",
+        "X-Cache": "MISS",
       });
+      res.send(fullData);
     } catch (error) {
       console.error("Error serving object:", error);
       if (error instanceof ObjectNotFoundError) {

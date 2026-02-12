@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { thumbUrl } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -188,7 +189,7 @@ export default function Suppliers() {
                         <TableCell>
                           {supplier.logoUrl ? (
                             <img
-                              src={supplier.logoUrl}
+                              src={thumbUrl(supplier.logoUrl, 64)}
                               alt={`${supplier.name} logo`}
                               className="h-8 w-8 rounded-md object-contain bg-muted"
                               data-testid={`img-supplier-logo-${supplier.id}`}
@@ -267,7 +268,7 @@ export default function Suppliers() {
                       <div className="flex items-center gap-2 min-w-0">
                         {supplier.logoUrl ? (
                           <img
-                            src={supplier.logoUrl}
+                            src={thumbUrl(supplier.logoUrl, 64)}
                             alt={`${supplier.name} logo`}
                             className="h-7 w-7 rounded-md object-contain bg-muted shrink-0"
                           />

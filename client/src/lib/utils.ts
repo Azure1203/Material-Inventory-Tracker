@@ -9,6 +9,11 @@ export function getCostLevelDisplay(level: number): string {
   return "$".repeat(Math.min(level, 5));
 }
 
+export function thumbUrl(src: string, width: number): string {
+  if (!src || !src.startsWith("/objects/")) return src;
+  return `${src}?w=${width}`;
+}
+
 export function getCostLevelColor(level: number): string {
   switch (level) {
     case 1:

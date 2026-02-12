@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Package, Building2, Factory, Palette, Layers, DollarSign, Info, Search, X } from "lucide-react";
-import { getCostLevelDisplay, getCostLevelColor } from "@/lib/utils";
+import { getCostLevelDisplay, getCostLevelColor, thumbUrl } from "@/lib/utils";
 import type { MaterialWithRelations, Supplier, Manufacturer, ColorRange, ProductGroup } from "@shared/schema";
 
 export default function Dashboard() {
@@ -225,7 +225,7 @@ export default function Dashboard() {
               data-testid={`button-filter-manufacturer-${m.id}`}
             >
               {m.logoUrl ? (
-                <img src={m.logoUrl} alt="" className="h-5 w-5 rounded-sm object-contain shrink-0 mr-1.5" data-testid={`img-dashboard-manufacturer-logo-${m.id}`} />
+                <img src={thumbUrl(m.logoUrl, 48)} alt="" className="h-5 w-5 rounded-sm object-contain shrink-0 mr-1.5" data-testid={`img-dashboard-manufacturer-logo-${m.id}`} />
               ) : null}
               {m.name}
             </Button>
@@ -247,7 +247,7 @@ export default function Dashboard() {
               data-testid={`button-filter-supplier-${s.id}`}
             >
               {s.logoUrl ? (
-                <img src={s.logoUrl} alt="" className="h-5 w-5 rounded-sm object-contain shrink-0 mr-1.5" data-testid={`img-dashboard-supplier-logo-${s.id}`} />
+                <img src={thumbUrl(s.logoUrl, 48)} alt="" className="h-5 w-5 rounded-sm object-contain shrink-0 mr-1.5" data-testid={`img-dashboard-supplier-logo-${s.id}`} />
               ) : null}
               {s.name}
             </Button>
