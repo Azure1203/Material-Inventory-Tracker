@@ -77,6 +77,7 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
       supplierId: null,
       manufacturerId: null,
       colorRangeId: null,
+      storageSystemType: "",
       imageUrl: "",
       websiteUrl: "",
       notes: "",
@@ -95,6 +96,7 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
         supplierId: material.supplierId || null,
         manufacturerId: material.manufacturerId || null,
         colorRangeId: material.colorRangeId || null,
+        storageSystemType: material.storageSystemType || "",
         imageUrl: material.imageUrl || "",
         websiteUrl: material.websiteUrl || "",
         notes: material.notes || "",
@@ -110,6 +112,7 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
         supplierId: null,
         manufacturerId: null,
         colorRangeId: null,
+        storageSystemType: "",
         imageUrl: "",
         websiteUrl: "",
         notes: "",
@@ -228,6 +231,19 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="storageSystemType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Storage System Type #</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., ST-100" {...field} value={field.value || ""} data-testid="input-storage-system-type" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="costLevel"

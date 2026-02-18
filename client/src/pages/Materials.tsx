@@ -134,6 +134,7 @@ export default function Materials() {
       const matchesSearch = !searchQuery || 
         material.name.toLowerCase().includes(searchLower) ||
         material.productCode?.toLowerCase().includes(searchLower) ||
+        material.storageSystemType?.toLowerCase().includes(searchLower) ||
         material.manufacturer?.name.toLowerCase().includes(searchLower) ||
         material.supplier?.name.toLowerCase().includes(searchLower) ||
         material.colorRange?.name.toLowerCase().includes(searchLower);
@@ -365,7 +366,7 @@ export default function Materials() {
                               )}
                             </div>
                             <span className="text-xs text-muted-foreground">
-                              {[material.productCode, material.colorRange?.name].filter(Boolean).join(" • ")}
+                              {[material.productCode, material.colorRange?.name, material.storageSystemType ? `Type: ${material.storageSystemType}` : null].filter(Boolean).join(" • ")}
                             </span>
                           </div>
                         </TableCell>
@@ -455,7 +456,7 @@ export default function Materials() {
                                 : material.name}
                             </p>
                             <p className="text-xs text-muted-foreground truncate">
-                              {[material.manufacturer?.name, material.supplier?.name].filter(Boolean).join(" / ")}
+                              {[material.manufacturer?.name, material.supplier?.name, material.storageSystemType ? `Type: ${material.storageSystemType}` : null].filter(Boolean).join(" / ")}
                             </p>
                           </div>
                           <div className="flex items-center gap-1 shrink-0">

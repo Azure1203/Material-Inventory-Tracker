@@ -141,6 +141,7 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <DetailItem label="Product Code" value={material.productCode} testId="text-product-code" />
             <DetailItem label="Name" value={material.name} testId="text-name" />
+            <DetailItem label="Storage System Type #" value={material.storageSystemType} testId="text-storage-system-type" />
             <DetailItem 
               label="Cost Level" 
               value={

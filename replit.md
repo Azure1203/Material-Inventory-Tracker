@@ -35,7 +35,7 @@ The schema defines a hierarchical structure:
 - **Manufacturers**: Companies that make materials (e.g., Tafisa, Uniboard)
 - **Color Collections**: Product lines from manufacturers (e.g., Karisma, Rivera)
 - **Product Groups**: Categories for materials (e.g., Interior Colors, Sublime Collection)
-- **Materials**: Individual products with references to supplier, manufacturer, color collection, and product groups (many-to-many via `materialProductGroups` junction table)
+- **Materials**: Individual products with references to supplier, manufacturer, color collection, and product groups (many-to-many via `materialProductGroups` junction table). Each material has an optional `storageSystemType` field for tracking Storage System Type #.
 - **Material Sizes**: Available size options (width × length @ thickness) for each material - combines dimensions and thickness into single entries since availability varies by combination (e.g., 4ft x 8ft @ 5/8")
 
 ### Build System
