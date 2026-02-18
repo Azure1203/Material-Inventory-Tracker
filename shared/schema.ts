@@ -81,6 +81,7 @@ export const materials = pgTable("materials", {
   supplierId: integer("supplier_id").references(() => suppliers.id),
   manufacturerId: integer("manufacturer_id").references(() => manufacturers.id),
   colorRangeId: integer("color_range_id").references(() => colorRanges.id),
+  storageSystemType: text("storage_system_type"),
   imageUrl: text("image_url"),
   websiteUrl: text("website_url"),
   notes: text("notes"),
