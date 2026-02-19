@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { getCostLevelDisplay, getCostLevelColor, thumbUrl } from "@/lib/utils";
 import { ExternalLink, Edit, X, Info } from "lucide-react";
 import type { MaterialWithRelations } from "@shared/schema";
@@ -31,19 +32,38 @@ function DetailImage({ src, alt, onClick }: { src: string; alt: string; onClick:
 
   return (
     <div className="flex justify-center">
-      <div className="max-h-48 rounded-lg border overflow-hidden bg-muted inline-flex relative">
-        {!loaded && <Skeleton className="h-48 w-48 rounded-lg" />}
-        <img
-          ref={imgRef}
-          src={thumbUrl(src, 400)}
-          alt={alt}
-          loading="lazy"
-          className={`max-h-48 rounded-lg object-contain cursor-pointer transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
-          onClick={onClick}
-          onLoad={() => setLoaded(true)}
-          onError={() => setError(true)}
-          data-testid="img-material"
-        />
+      <div className="relative inline-flex">
+        <div className="max-h-48 rounded-lg border overflow-hidden bg-muted inline-flex relative">
+          {!loaded && <Skeleton className="h-48 w-48 rounded-lg" />}
+          <img
+            ref={imgRef}
+            src={thumbUrl(src, 400)}
+            alt={alt}
+            loading="lazy"
+            className={`max-h-48 rounded-lg object-contain cursor-pointer transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
+            onClick={onClick}
+            onLoad={() => setLoaded(true)}
+            onError={() => setError(true)}
+            data-testid="img-material"
+          />
+        </div>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              className="absolute bottom-1 right-1 h-5 w-5 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors z-10"
+              data-testid="button-color-disclaimer-detail"
+            >
+              <Info className="h-3.5 w-3.5" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent side="top" align="end" className="w-64 p-3">
+            <p className="font-semibold text-xs mb-1">Color Notice</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Colors shown may not be an exact match. We recommend contacting your Netley Millwork Sales Rep for physical samples before making your final selection.
+            </p>
+          </PopoverContent>
+        </Popover>
       </div>
     </div>
   );

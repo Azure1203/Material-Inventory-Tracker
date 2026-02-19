@@ -15,9 +15,38 @@ import { getCostLevelDisplay, getCostLevelColor, thumbUrl } from "@/lib/utils";
 import { useLookupData } from "@/hooks/use-lookup-data";
 import { MaterialDialog } from "@/components/MaterialDialog";
 import { MaterialDetailDialog } from "@/components/MaterialDetailDialog";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Plus, Search, Edit, Trash2, ExternalLink, Package, Filter, X, Info } from "lucide-react";
 import type { MaterialWithRelations } from "@shared/schema";
 import { useAdminAuth } from "@/lib/adminAuth";
+
+function ColorDisclaimer({ size = "sm" }: { size?: "sm" | "md" }) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          onClick={(e) => e.stopPropagation()}
+          className={`absolute ${size === "sm" ? "bottom-0.5 right-0.5 h-4 w-4" : "bottom-1 right-1 h-5 w-5"} rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors z-10`}
+          data-testid="button-color-disclaimer"
+        >
+          <Info className={size === "sm" ? "h-3 w-3" : "h-3.5 w-3.5"} />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        side="top"
+        align="end"
+        className="w-64 p-3"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <p className="font-semibold text-xs mb-1">Color Notice</p>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          Colors shown may not be an exact match. We recommend contacting your Netley Millwork Sales Rep for physical samples before making your final selection.
+        </p>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 function LazyImage({ src, alt, className, sizeClass, onClick }: { src: string; alt: string; className?: string; sizeClass: string; onClick?: () => void }) {
   const thumbSrc = useMemo(() => thumbUrl(src, 96), [src]);
@@ -328,13 +357,16 @@ export default function Materials() {
                         onClick={() => handleRowClick(material)}
                       >
                         <TableCell>
-                          {material.imageUrl ? (
-                            <LazyImage src={material.imageUrl} alt={material.name} sizeClass="h-10 w-10" />
-                          ) : (
-                            <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center">
-                              <Package className="h-5 w-5 text-muted-foreground" />
-                            </div>
-                          )}
+                          <div className="relative" style={{ width: "fit-content" }}>
+                            {material.imageUrl ? (
+                              <LazyImage src={material.imageUrl} alt={material.name} sizeClass="h-10 w-10" />
+                            ) : (
+                              <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center">
+                                <Package className="h-5 w-5 text-muted-foreground" />
+                              </div>
+                            )}
+                            <ColorDisclaimer />
+                          </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col">
@@ -431,13 +463,16 @@ export default function Materials() {
                     onClick={() => handleRowClick(material)}
                   >
                     <div className="flex gap-3">
-                      {material.imageUrl ? (
-                        <LazyImage src={material.imageUrl} alt={material.name} sizeClass="h-12 w-12" className="shrink-0" />
-                      ) : (
-                        <div className="h-12 w-12 rounded-md bg-muted flex items-center justify-center shrink-0">
-                          <Package className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                      )}
+                      <div className="relative shrink-0" style={{ width: "fit-content" }}>
+                        {material.imageUrl ? (
+                          <LazyImage src={material.imageUrl} alt={material.name} sizeClass="h-12 w-12" />
+                        ) : (
+                          <div className="h-12 w-12 rounded-md bg-muted flex items-center justify-center">
+                            <Package className="h-5 w-5 text-muted-foreground" />
+                          </div>
+                        )}
+                        <ColorDisclaimer size="md" />
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0">

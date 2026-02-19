@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Loader2, Plus, X, ExternalLink, Check } from "lucide-react";
+import { Loader2, Plus, X, ExternalLink, Check, Info } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { insertMaterialWithSizesSchema, type MaterialWithRelations, type InsertMaterialWithSizes } from "@shared/schema";
@@ -485,12 +485,29 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
                 {isUploadingImage && <Loader2 className="h-4 w-4 animate-spin" />}
               </div>
               {form.watch("imageUrl") && (
-                <div className="mt-2">
+                <div className="mt-2 relative inline-block">
                   <img 
                     src={form.watch("imageUrl") || ""} 
                     alt="Material preview" 
                     className="h-20 w-20 object-cover rounded-md border"
                   />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="absolute bottom-1 right-1 h-5 w-5 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors z-10"
+                        data-testid="button-color-disclaimer-form"
+                      >
+                        <Info className="h-3.5 w-3.5" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent side="top" align="end" className="w-64 p-3">
+                      <p className="font-semibold text-xs mb-1">Color Notice</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Colors shown may not be an exact match. We recommend contacting your Netley Millwork Sales Rep for physical samples before making your final selection.
+                      </p>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               )}
             </div>
