@@ -61,8 +61,14 @@ function getAllowedWidth(requested: number): number | null {
   return closest;
 }
 
-async function resizeImage(data: Buffer, width: number, originalContentType: string): Promise<{ data: Buffer; contentType: string }> {
+async function resizeImage(data: Buffer, width: number, originalContentType: string, preferWebP: boolean): Promise<{ data: Buffer; contentType: string }> {
   const pipeline = sharp(data).resize(width, undefined, { fit: "inside", withoutEnlargement: true });
+
+  if (preferWebP) {
+    const hasAlpha = originalContentType === "image/png" || originalContentType === "image/svg+xml";
+    const resized = await pipeline.webp({ quality: 80, alphaQuality: hasAlpha ? 100 : undefined }).toBuffer();
+    return { data: resized, contentType: "image/webp" };
+  }
 
   if (originalContentType === "image/png" || originalContentType === "image/svg+xml") {
     const resized = await pipeline.png({ quality: 80 }).toBuffer();
@@ -105,8 +111,9 @@ export function registerObjectStorageRoutes(app: Express): void {
       const objectPath = req.path;
       const requestedWidth = req.query.w ? parseInt(req.query.w as string, 10) : null;
       const thumbWidth = requestedWidth && !isNaN(requestedWidth) ? getAllowedWidth(requestedWidth) : null;
+      const acceptsWebP = (req.headers.accept || "").includes("image/webp");
 
-      const cacheKey = thumbWidth ? `${objectPath}?w=${thumbWidth}` : objectPath;
+      const cacheKey = thumbWidth ? `${objectPath}?w=${thumbWidth}${acceptsWebP ? "&f=webp" : ""}` : objectPath;
 
       const cached = getCachedObject(cacheKey);
       if (cached) {
@@ -144,7 +151,7 @@ export function registerObjectStorageRoutes(app: Express): void {
 
       if (thumbWidth && originalContentType.startsWith("image/")) {
         try {
-          const { data: resizedData, contentType: resizedType } = await resizeImage(fullData, thumbWidth, originalContentType);
+          const { data: resizedData, contentType: resizedType } = await resizeImage(fullData, thumbWidth, originalContentType, acceptsWebP);
           setCachedObject(cacheKey, resizedData, resizedType);
 
           res.set({

@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Package, Building2, Factory, Palette, Layers, DollarSign, Info, Search, X } from "lucide-react";
 import { getCostLevelDisplay, getCostLevelColor, thumbUrl } from "@/lib/utils";
-import type { MaterialWithRelations, Supplier, Manufacturer, ColorRange, ProductGroup } from "@shared/schema";
+import { useLookupData } from "@/hooks/use-lookup-data";
+import type { MaterialWithRelations } from "@shared/schema";
 
 export default function Dashboard() {
   const [, navigate] = useLocation();
@@ -21,23 +22,9 @@ export default function Dashboard() {
     queryKey: ["/api/materials"],
   });
 
-  const { data: suppliers, isLoading: suppliersLoading } = useQuery<Supplier[]>({
-    queryKey: ["/api/suppliers"],
-  });
+  const { suppliers, manufacturers, colorRanges, productGroups, isLoading: lookupLoading } = useLookupData();
 
-  const { data: manufacturers, isLoading: manufacturersLoading } = useQuery<Manufacturer[]>({
-    queryKey: ["/api/manufacturers"],
-  });
-
-  const { data: colorRanges, isLoading: colorRangesLoading } = useQuery<ColorRange[]>({
-    queryKey: ["/api/color-ranges"],
-  });
-
-  const { data: productGroups, isLoading: productGroupsLoading } = useQuery<ProductGroup[]>({
-    queryKey: ["/api/product-groups"],
-  });
-
-  const isLoading = materialsLoading || suppliersLoading || manufacturersLoading || colorRangesLoading || productGroupsLoading;
+  const isLoading = materialsLoading || lookupLoading;
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {

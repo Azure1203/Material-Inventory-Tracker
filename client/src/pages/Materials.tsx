@@ -12,10 +12,11 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { getCostLevelDisplay, getCostLevelColor, thumbUrl } from "@/lib/utils";
+import { useLookupData } from "@/hooks/use-lookup-data";
 import { MaterialDialog } from "@/components/MaterialDialog";
 import { MaterialDetailDialog } from "@/components/MaterialDetailDialog";
 import { Plus, Search, Edit, Trash2, ExternalLink, Package, Filter, X, Info } from "lucide-react";
-import type { MaterialWithRelations, Supplier, Manufacturer, ProductGroup } from "@shared/schema";
+import type { MaterialWithRelations } from "@shared/schema";
 import { useAdminAuth } from "@/lib/adminAuth";
 
 function LazyImage({ src, alt, className, sizeClass, onClick }: { src: string; alt: string; className?: string; sizeClass: string; onClick?: () => void }) {
@@ -99,17 +100,7 @@ export default function Materials() {
     queryKey: ["/api/materials"],
   });
 
-  const { data: suppliers } = useQuery<Supplier[]>({
-    queryKey: ["/api/suppliers"],
-  });
-
-  const { data: manufacturers } = useQuery<Manufacturer[]>({
-    queryKey: ["/api/manufacturers"],
-  });
-
-  const { data: productGroups } = useQuery<ProductGroup[]>({
-    queryKey: ["/api/product-groups"],
-  });
+  const { suppliers, manufacturers, productGroups } = useLookupData();
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {

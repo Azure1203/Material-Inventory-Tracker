@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,8 @@ import { apiRequest } from "@/lib/queryClient";
 import { Loader2, Plus, X, ExternalLink, Check } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-import { insertMaterialWithSizesSchema, type MaterialWithRelations, type Supplier, type Manufacturer, type ColorRange, type ProductGroup, type InsertMaterialWithSizes } from "@shared/schema";
+import { insertMaterialWithSizesSchema, type MaterialWithRelations, type InsertMaterialWithSizes } from "@shared/schema";
+import { useLookupData } from "@/hooks/use-lookup-data";
 import { useState, useEffect } from "react";
 import { useUpload } from "@/hooks/use-upload";
 
@@ -62,10 +63,7 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
     },
   });
 
-  const { data: suppliers } = useQuery<Supplier[]>({ queryKey: ["/api/suppliers"] });
-  const { data: manufacturers } = useQuery<Manufacturer[]>({ queryKey: ["/api/manufacturers"] });
-  const { data: colorRanges } = useQuery<ColorRange[]>({ queryKey: ["/api/color-ranges"] });
-  const { data: productGroups } = useQuery<ProductGroup[]>({ queryKey: ["/api/product-groups"] });
+  const { suppliers, manufacturers, colorRanges, productGroups } = useLookupData();
 
   const form = useForm<MaterialFormData>({
     resolver: zodResolver(materialFormSchema),

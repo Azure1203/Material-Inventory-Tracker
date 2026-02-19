@@ -59,6 +59,7 @@ export default function ColorRanges() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/color-ranges"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/lookup-data"] });
       toast({ title: "Color collection created successfully" });
       setDialogOpen(false);
       form.reset();
@@ -75,6 +76,7 @@ export default function ColorRanges() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/color-ranges"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/lookup-data"] });
       toast({ title: "Color collection updated successfully" });
       setDialogOpen(false);
       setEditingColorRange(null);
@@ -90,6 +92,7 @@ export default function ColorRanges() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/color-ranges"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/lookup-data"] });
       toast({ title: "Color collection deleted successfully" });
       setDeleteDialogOpen(false);
       setColorRangeToDelete(null);

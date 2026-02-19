@@ -41,6 +41,26 @@ export async function registerRoutes(
     res.json({ isAdmin: !!req.session?.isAdmin });
   });
 
+  // Batch lookup data API (suppliers, manufacturers, color ranges, product groups in one call)
+  app.get("/api/lookup-data", async (req, res) => {
+    try {
+      const [suppliersList, manufacturersList, colorRangesList, productGroupsList] = await Promise.all([
+        storage.getSuppliers(),
+        storage.getManufacturers(),
+        storage.getColorRanges(),
+        storage.getProductGroups(),
+      ]);
+      res.json({
+        suppliers: suppliersList,
+        manufacturers: manufacturersList,
+        colorRanges: colorRangesList,
+        productGroups: productGroupsList,
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch lookup data" });
+    }
+  });
+
   // Suppliers API
   app.get("/api/suppliers", async (req, res) => {
     try {

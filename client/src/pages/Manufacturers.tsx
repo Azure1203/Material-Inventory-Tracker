@@ -70,6 +70,7 @@ export default function Manufacturers() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/manufacturers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/lookup-data"] });
       toast({ title: "Manufacturer created successfully" });
       setDialogOpen(false);
       form.reset();
@@ -86,6 +87,7 @@ export default function Manufacturers() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/manufacturers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/lookup-data"] });
       toast({ title: "Manufacturer updated successfully" });
       setDialogOpen(false);
       setEditingManufacturer(null);
@@ -101,6 +103,7 @@ export default function Manufacturers() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/manufacturers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/lookup-data"] });
       toast({ title: "Manufacturer deleted successfully" });
       setDeleteDialogOpen(false);
       setManufacturerToDelete(null);

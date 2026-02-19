@@ -70,6 +70,7 @@ export default function Suppliers() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/suppliers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/lookup-data"] });
       toast({ title: "Supplier created successfully" });
       setDialogOpen(false);
       form.reset();
@@ -86,6 +87,7 @@ export default function Suppliers() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/suppliers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/lookup-data"] });
       toast({ title: "Supplier updated successfully" });
       setDialogOpen(false);
       setEditingSupplier(null);
@@ -101,6 +103,7 @@ export default function Suppliers() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/suppliers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/lookup-data"] });
       toast({ title: "Supplier deleted successfully" });
       setDeleteDialogOpen(false);
       setSupplierToDelete(null);

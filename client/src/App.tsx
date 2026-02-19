@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -10,26 +10,39 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { AdminAuthProvider, useAdminAuth } from "@/lib/adminAuth";
 import { AdminLoginDialog } from "@/components/AdminLoginDialog";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Lock, LogOut, Shield } from "lucide-react";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/Dashboard";
 import Materials from "@/pages/Materials";
-import Suppliers from "@/pages/Suppliers";
-import Manufacturers from "@/pages/Manufacturers";
-import ColorRanges from "@/pages/ColorRanges";
-import ProductGroups from "@/pages/ProductGroups";
+
+const Suppliers = lazy(() => import("@/pages/Suppliers"));
+const Manufacturers = lazy(() => import("@/pages/Manufacturers"));
+const ColorRanges = lazy(() => import("@/pages/ColorRanges"));
+const ProductGroups = lazy(() => import("@/pages/ProductGroups"));
+
+function PageFallback() {
+  return (
+    <div className="p-6 space-y-4">
+      <Skeleton className="h-8 w-48" />
+      <Skeleton className="h-64 w-full" />
+    </div>
+  );
+}
 
 function Router() {
   return (
-    <Switch>
-      <Route path="/" component={Dashboard} />
-      <Route path="/materials" component={Materials} />
-      <Route path="/suppliers" component={Suppliers} />
-      <Route path="/manufacturers" component={Manufacturers} />
-      <Route path="/color-ranges" component={ColorRanges} />
-      <Route path="/product-groups" component={ProductGroups} />
-      <Route component={NotFound} />
-    </Switch>
+    <Suspense fallback={<PageFallback />}>
+      <Switch>
+        <Route path="/" component={Dashboard} />
+        <Route path="/materials" component={Materials} />
+        <Route path="/suppliers" component={Suppliers} />
+        <Route path="/manufacturers" component={Manufacturers} />
+        <Route path="/color-ranges" component={ColorRanges} />
+        <Route path="/product-groups" component={ProductGroups} />
+        <Route component={NotFound} />
+      </Switch>
+    </Suspense>
   );
 }
 

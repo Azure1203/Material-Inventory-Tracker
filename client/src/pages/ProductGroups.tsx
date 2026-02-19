@@ -48,6 +48,7 @@ export default function ProductGroups() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/product-groups"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/lookup-data"] });
       toast({ title: "Product group created successfully" });
       setDialogOpen(false);
       form.reset();
@@ -64,6 +65,7 @@ export default function ProductGroups() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/product-groups"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/lookup-data"] });
       toast({ title: "Product group updated successfully" });
       setDialogOpen(false);
       setEditingProductGroup(null);
@@ -79,6 +81,7 @@ export default function ProductGroups() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/product-groups"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/lookup-data"] });
       toast({ title: "Product group deleted successfully" });
       setDeleteDialogOpen(false);
       setProductGroupToDelete(null);
