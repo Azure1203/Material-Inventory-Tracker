@@ -81,6 +81,26 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Run database migrations before anything else
+  try {
+    const { pool } = await import("./db");
+    const colResult = await pool.query(
+      `SELECT data_type FROM information_schema.columns WHERE table_name = 'materials' AND column_name = 'stock_status'`
+    );
+    if (colResult.rows.length > 0 && colResult.rows[0].data_type === 'boolean') {
+      log("Migrating stock_status column from boolean to text...");
+      await pool.query(`
+        ALTER TABLE materials 
+        ALTER COLUMN stock_status TYPE text 
+        USING CASE WHEN stock_status::text = 'true' THEN 'stocked' WHEN stock_status::text = 'false' THEN 'non_stock' ELSE 'stocked' END
+      `);
+      await pool.query(`ALTER TABLE materials ALTER COLUMN stock_status SET DEFAULT 'stocked'`);
+      log("stock_status migration complete");
+    }
+  } catch (error) {
+    console.error("Error running stock_status migration:", error);
+  }
+
   await registerRoutes(httpServer, app);
 
   // Seed the database with initial data
