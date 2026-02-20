@@ -97,6 +97,16 @@ app.use((req, res, next) => {
       await pool.query(`ALTER TABLE materials ALTER COLUMN stock_status SET DEFAULT 'stocked'`);
       log("stock_status migration complete");
     }
+    // Fix any leftover 'true'/'false' text values from incomplete migrations
+    const badValues = await pool.query(
+      `SELECT count(*) as cnt FROM materials WHERE stock_status IN ('true', 'false')`
+    );
+    if (parseInt(badValues.rows[0].cnt) > 0) {
+      log(`Fixing ${badValues.rows[0].cnt} materials with legacy stock_status values...`);
+      await pool.query(`UPDATE materials SET stock_status = 'stocked' WHERE stock_status = 'true'`);
+      await pool.query(`UPDATE materials SET stock_status = 'non_stock' WHERE stock_status = 'false'`);
+      log("Legacy stock_status values fixed");
+    }
   } catch (error) {
     console.error("Error running stock_status migration:", error);
   }
