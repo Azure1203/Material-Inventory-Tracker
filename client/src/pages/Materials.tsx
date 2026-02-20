@@ -17,7 +17,7 @@ import { MaterialDialog } from "@/components/MaterialDialog";
 import { MaterialDetailDialog } from "@/components/MaterialDetailDialog";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Plus, Search, Edit, Trash2, ExternalLink, Package, Filter, X, Info } from "lucide-react";
-import type { MaterialWithRelations } from "@shared/schema";
+import { STOCK_STATUS, STOCK_STATUS_LABELS, type MaterialWithRelations } from "@shared/schema";
 import { useAdminAuth } from "@/lib/adminAuth";
 
 function ColorDisclaimer({ size = "sm" }: { size?: "sm" | "md" }) {
@@ -92,7 +92,7 @@ export default function Materials() {
   const urlParams = new URLSearchParams(searchString);
 
   const [searchQuery, setSearchQuery] = useState(urlParams.get("search") || "");
-  const [stockFilter, setStockFilter] = useState<"all" | "stock" | "non-stock">("all");
+  const [stockFilter, setStockFilter] = useState<string>("all");
   const [supplierFilter, setSupplierFilter] = useState<string>(urlParams.get("supplier") || "all");
   const [manufacturerFilter, setManufacturerFilter] = useState<string>(urlParams.get("manufacturer") || "all");
   const [productGroupFilter, setProductGroupFilter] = useState<string>(urlParams.get("productGroup") || "all");
@@ -159,9 +159,7 @@ export default function Materials() {
         material.supplier?.name.toLowerCase().includes(searchLower) ||
         material.colorRange?.name.toLowerCase().includes(searchLower);
 
-      const matchesStock = stockFilter === "all" ||
-        (stockFilter === "stock" && material.inStock) ||
-        (stockFilter === "non-stock" && !material.inStock);
+      const matchesStock = stockFilter === "all" || material.stockStatus === stockFilter;
 
       const matchesSupplier = supplierFilter === "all" || material.supplierId === parseInt(supplierFilter);
       const matchesManufacturer = manufacturerFilter === "all" || material.manufacturerId === parseInt(manufacturerFilter);
@@ -244,14 +242,15 @@ export default function Materials() {
               />
             </div>
             <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
-              <Select value={stockFilter} onValueChange={(val) => setStockFilter(val as typeof stockFilter)}>
-                <SelectTrigger className="w-full sm:w-[140px]" data-testid="filter-stock">
+              <Select value={stockFilter} onValueChange={setStockFilter}>
+                <SelectTrigger className="w-full sm:w-[160px]" data-testid="filter-stock">
                   <SelectValue placeholder="Stock type" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Materials</SelectItem>
-                  <SelectItem value="stock">Stock Items</SelectItem>
-                  <SelectItem value="non-stock">Non-Stock, 6-12 Week Leadtime</SelectItem>
+                  <SelectItem value="stocked">Stocked At Netley Millwork</SelectItem>
+                  <SelectItem value="local_stock">Local Stock, 2-3 Week Leadtime</SelectItem>
+                  <SelectItem value="non_stock">Non-Stock, 6-12 Week Leadtime</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -422,8 +421,8 @@ export default function Materials() {
                           </span>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={material.inStock ? "default" : "secondary"}>
-                            {material.inStock ? "Stock" : "Non-Stock, 6-12 Week Leadtime"}
+                          <Badge variant={material.stockStatus === STOCK_STATUS.NON_STOCK ? "secondary" : "default"}>
+                            {STOCK_STATUS_LABELS[material.stockStatus] || material.stockStatus}
                           </Badge>
                         </TableCell>
                         {isAdmin && (
@@ -489,8 +488,8 @@ export default function Materials() {
                             <span className={`font-semibold text-xs ${getCostLevelColor(material.costLevel)}`}>
                               {getCostLevelDisplay(material.costLevel)}
                             </span>
-                            <Badge variant={material.inStock ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
-                              {material.inStock ? "Stock" : "Non-Stock, 6-12 Week Leadtime"}
+                            <Badge variant={material.stockStatus === STOCK_STATUS.NON_STOCK ? "secondary" : "default"} className="text-[10px] px-1.5 py-0">
+                              {STOCK_STATUS_LABELS[material.stockStatus] || material.stockStatus}
                             </Badge>
                           </div>
                         </div>

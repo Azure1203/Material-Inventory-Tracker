@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -70,7 +70,7 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
     defaultValues: {
       name: "",
       productCode: "",
-      inStock: true,
+      stockStatus: "stocked",
       costLevel: 1,
       supplierId: null,
       manufacturerId: null,
@@ -89,7 +89,7 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
       form.reset({
         name: material.name || "",
         productCode: material.productCode || "",
-        inStock: material.inStock ?? true,
+        stockStatus: material.stockStatus || "stocked",
         costLevel: material.costLevel || 1,
         supplierId: material.supplierId || null,
         manufacturerId: material.manufacturerId || null,
@@ -105,7 +105,7 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
       form.reset({
         name: "",
         productCode: "",
-        inStock: true,
+        stockStatus: "stocked",
         costLevel: 1,
         supplierId: null,
         manufacturerId: null,
@@ -551,20 +551,23 @@ export function MaterialDialog({ open, onOpenChange, material }: MaterialDialogP
 
             <FormField
               control={form.control}
-              name="inStock"
+              name="stockStatus"
               render={({ field }) => (
-                <FormItem className="flex items-center justify-between rounded-lg border p-3">
-                  <div>
-                    <FormLabel className="text-base">Stock Item</FormLabel>
-                    <p className="text-sm text-muted-foreground">Is this a regularly stocked material? (Non-stock items are special order)</p>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      data-testid="switch-stock-item"
-                    />
-                  </FormControl>
+                <FormItem>
+                  <FormLabel>Stock Status</FormLabel>
+                  <Select value={field.value || "stocked"} onValueChange={field.onChange}>
+                    <FormControl>
+                      <SelectTrigger data-testid="select-stock-status">
+                        <SelectValue placeholder="Select stock status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="stocked">Stocked At Netley Millwork</SelectItem>
+                      <SelectItem value="local_stock">Local Stock, 2-3 Week Leadtime</SelectItem>
+                      <SelectItem value="non_stock">Non-Stock, 6-12 Week Leadtime</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
                 </FormItem>
               )}
             />

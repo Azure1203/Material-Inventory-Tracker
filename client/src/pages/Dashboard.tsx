@@ -158,11 +158,9 @@ export default function Dashboard() {
                           {[material.manufacturer?.name, material.supplier?.name, material.productCode].filter(Boolean).join(" · ")}
                         </p>
                       </div>
-                      {material.inStock ? (
-                        <Badge variant="secondary" className="shrink-0 text-xs">Stock</Badge>
-                      ) : (
-                        <Badge variant="outline" className="shrink-0 text-xs">Non-Stock, 6-12 Week Leadtime</Badge>
-                      )}
+                      <Badge variant={material.stockStatus === "non_stock" ? "outline" : "secondary"} className="shrink-0 text-xs">
+                        {material.stockStatus === "stocked" ? "Stocked" : material.stockStatus === "local_stock" ? "Local Stock" : "Non-Stock"}
+                      </Badge>
                     </div>
                   ))}
                   <div

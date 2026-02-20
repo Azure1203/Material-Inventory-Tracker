@@ -70,11 +70,18 @@ The schema defines a hierarchical structure:
 
 ## Design Decisions
 
-### Stock Classification Terminology
-- **Stock Item** (`inStock: true`): A regularly stocked material that is always available
-- **Non-Stock** (`inStock: false`): A special order material that must be ordered when needed
+### Stock Classification Terminology (3-Tier System)
+- **Stocked At Netley Millwork** (`stockStatus: "stocked"`): A regularly stocked material always available
+- **Local Stock, 2-3 Week Leadtime** (`stockStatus: "local_stock"`): Available locally but requires lead time
+- **Non-Stock, 6-12 Week Leadtime** (`stockStatus: "non_stock"`): Special order material with longer lead time
 - This is a permanent classification, not a temporary inventory status
 - **No "out of stock" concept**: This is a material catalog, not inventory tracking
+- Constants defined in `shared/schema.ts` via `STOCK_STATUS` and `STOCK_STATUS_LABELS`
+
+### Color Disclaimer
+- Small info icon appears on all material images (list view, detail dialog, edit form)
+- Opens a popover with "Color Notice" explaining that photos may not match actual colors
+- Recommends customers contact Netley Millwork Sales Rep for physical samples
 
 ### Size Options
 - Materials can have multiple size options combining width, length, and thickness (e.g., "4ft x 8ft @ 5/8"", "5x10 @ 3/4"")

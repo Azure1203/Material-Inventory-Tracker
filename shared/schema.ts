@@ -71,12 +71,27 @@ export const insertProductGroupSchema = createInsertSchema(productGroups).omit({
 export type InsertProductGroup = z.infer<typeof insertProductGroupSchema>;
 export type ProductGroup = typeof productGroups.$inferSelect;
 
+// Stock status options
+export const STOCK_STATUS = {
+  STOCKED: "stocked",
+  LOCAL_STOCK: "local_stock",
+  NON_STOCK: "non_stock",
+} as const;
+
+export const STOCK_STATUS_LABELS: Record<string, string> = {
+  [STOCK_STATUS.STOCKED]: "Stocked At Netley Millwork",
+  [STOCK_STATUS.LOCAL_STOCK]: "Local Stock, 2-3 Week Leadtime",
+  [STOCK_STATUS.NON_STOCK]: "Non-Stock, 6-12 Week Leadtime",
+};
+
+export type StockStatus = typeof STOCK_STATUS[keyof typeof STOCK_STATUS];
+
 // Materials table
 export const materials = pgTable("materials", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   productCode: text("product_code"),
-  inStock: boolean("in_stock").notNull().default(true),
+  stockStatus: text("stock_status").notNull().default("stocked"),
   costLevel: integer("cost_level").notNull().default(1), // 1 = $, 2 = $$, etc.
   supplierId: integer("supplier_id").references(() => suppliers.id),
   manufacturerId: integer("manufacturer_id").references(() => manufacturers.id),

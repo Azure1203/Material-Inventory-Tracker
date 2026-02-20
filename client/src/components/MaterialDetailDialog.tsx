@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { getCostLevelDisplay, getCostLevelColor, thumbUrl } from "@/lib/utils";
 import { ExternalLink, Edit, X, Info } from "lucide-react";
-import type { MaterialWithRelations } from "@shared/schema";
+import { STOCK_STATUS, STOCK_STATUS_LABELS, type MaterialWithRelations } from "@shared/schema";
 
 interface MaterialDetailDialogProps {
   open: boolean;
@@ -180,8 +180,8 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
             <DetailItem 
               label="Stock Type" 
               value={
-                <Badge variant={material.inStock ? "default" : "secondary"} data-testid="badge-stock-type">
-                  {material.inStock ? "Stock Item" : "Non-Stock, 6-12 Week Leadtime"}
+                <Badge variant={material.stockStatus === STOCK_STATUS.NON_STOCK ? "secondary" : "default"} data-testid="badge-stock-type">
+                  {STOCK_STATUS_LABELS[material.stockStatus] || material.stockStatus}
                 </Badge>
               }
               testId="text-stock-type"
