@@ -100,12 +100,14 @@ function AppLayout() {
             </div>
 
             <div className="flex flex-col items-center gap-0.5" data-testid="header-brand">
-              <img
-                src={logoSrc}
-                alt="Netley Millwork"
-                className="h-7 w-auto max-w-[130px] sm:max-w-[160px] object-contain"
-                data-testid="img-header-logo"
-              />
+              <div className="dark:bg-white/95 dark:rounded-md dark:px-2.5 dark:py-1">
+                <img
+                  src={logoSrc}
+                  alt="Netley Millwork"
+                  className="h-7 w-auto max-w-[130px] sm:max-w-[160px] object-contain"
+                  data-testid="img-header-logo"
+                />
+              </div>
               <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium leading-none">
                 Material Database
               </span>
