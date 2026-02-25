@@ -16,7 +16,6 @@ import type { MaterialWithRelations } from "@shared/schema";
 
 export default function Dashboard() {
   const [, navigate] = useLocation();
-  const [manufacturerFilter, setManufacturerFilter] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -53,18 +52,12 @@ export default function Dashboard() {
       .slice(0, 8);
   }, [searchQuery, materials]);
 
-  const filteredMaterials = manufacturerFilter
-    ? materials?.filter(m => m.manufacturerId === manufacturerFilter)
-    : materials;
-
-  const totalMaterials = filteredMaterials?.length || 0;
-
   const stats = [
     {
       title: "Total Materials",
-      value: totalMaterials,
+      value: materials?.length || 0,
       icon: Package,
-      href: manufacturerFilter ? `/materials?manufacturer=${manufacturerFilter}` : "/materials",
+      href: "/materials",
     },
     {
       title: "Suppliers",
@@ -88,19 +81,15 @@ export default function Dashboard() {
 
   const materialsByGroup = productGroups?.map(group => ({
     ...group,
-    count: filteredMaterials?.filter(m => m.productGroups?.some(pg => pg.id === group.id)).length || 0,
+    count: materials?.filter(m => m.productGroups?.some(pg => pg.id === group.id)).length || 0,
   })) || [];
 
   const materialsByCost = [1, 2, 3, 4, 5].map(level => ({
     level,
     display: getCostLevelDisplay(level),
     colorClass: getCostLevelColor(level),
-    count: filteredMaterials?.filter(m => m.costLevel === level).length || 0,
+    count: materials?.filter(m => m.costLevel === level).length || 0,
   })).filter(c => c.count > 0);
-
-  const activeManufacturerName = manufacturerFilter
-    ? manufacturers?.find(m => m.id === manufacturerFilter)?.name
-    : null;
 
   return (
     <div className="space-y-5 pb-8">
@@ -240,27 +229,24 @@ export default function Dashboard() {
               <div>
                 <CardTitle className="text-base">Browse & Filter</CardTitle>
                 <CardDescription className="text-xs mt-0.5">
-                  Filter by manufacturer to narrow the stats above, or browse directly to a supplier's materials
+                  Click any manufacturer or supplier to view their available materials
                 </CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent className="pt-5 space-y-5">
 
-            {/* Manufacturer Filter */}
+            {/* Manufacturer Browse */}
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-0.5 h-4 bg-primary rounded-full" />
                 <p className="text-xs font-semibold uppercase tracking-widest text-foreground flex items-center gap-1.5">
                   <Factory className="h-3.5 w-3.5 text-primary" />
-                  Filter by Manufacturer
+                  Browse by Manufacturer
                 </p>
               </div>
               <p className="text-xs text-muted-foreground mb-3 pl-3">
-                Select a manufacturer to filter the counts above
-                {activeManufacturerName && (
-                  <span className="ml-1 font-medium text-primary">— showing {activeManufacturerName}</span>
-                )}
+                Click a manufacturer to view all their available materials
               </p>
               {isLoading ? (
                 <div className="flex gap-2 flex-wrap">
@@ -268,26 +254,11 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => setManufacturerFilter(null)}
-                    className={`inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-all border ${
-                      manufacturerFilter === null
-                        ? "bg-primary text-primary-foreground border-primary ring-2 ring-primary/20 ring-offset-1 font-semibold"
-                        : "bg-background border-border text-foreground hover:bg-primary/5 hover:border-primary/40"
-                    }`}
-                    data-testid="button-filter-manufacturer-all"
-                  >
-                    All
-                  </button>
                   {manufacturers?.map(m => (
                     <button
                       key={m.id}
-                      onClick={() => setManufacturerFilter(manufacturerFilter === m.id ? null : m.id)}
-                      className={`inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-all border ${
-                        manufacturerFilter === m.id
-                          ? "bg-primary text-primary-foreground border-primary ring-2 ring-primary/20 ring-offset-1 font-semibold"
-                          : "bg-background border-border text-foreground hover:bg-primary/5 hover:border-primary/40"
-                      }`}
+                      onClick={() => navigate(`/materials?manufacturer=${m.id}`)}
+                      className="inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium bg-background border border-border text-foreground hover:bg-primary/5 hover:border-primary/40 transition-all"
                       data-testid={`button-filter-manufacturer-${m.id}`}
                     >
                       {m.logoUrl && (
@@ -299,6 +270,7 @@ export default function Dashboard() {
                         />
                       )}
                       {m.name}
+                      <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                     </button>
                   ))}
                 </div>
@@ -361,7 +333,7 @@ export default function Dashboard() {
               <div>
                 <CardTitle className="text-base">Materials by Product Group</CardTitle>
                 <CardDescription className="text-xs mt-0.5">
-                  {activeManufacturerName ? `Filtered to ${activeManufacturerName}` : "Click a group to browse its materials"}
+                  Click a group to browse its materials
                 </CardDescription>
               </div>
             </div>
@@ -382,7 +354,7 @@ export default function Dashboard() {
                   <div
                     key={group.id}
                     className="relative flex items-stretch border border-border rounded-xl overflow-hidden cursor-pointer hover:shadow-md hover:border-primary/40 transition-all group bg-card"
-                    onClick={() => navigate(`/materials?productGroup=${group.id}${manufacturerFilter ? `&manufacturer=${manufacturerFilter}` : ""}`)}
+                    onClick={() => navigate(`/materials?productGroup=${group.id}`)}
                     data-testid={`group-${group.id}`}
                   >
                     <div className="w-1 bg-primary shrink-0" />
@@ -415,7 +387,7 @@ export default function Dashboard() {
               <div>
                 <CardTitle className="text-base">Materials by Cost Level</CardTitle>
                 <CardDescription className="text-xs mt-0.5">
-                  {activeManufacturerName ? `Filtered to ${activeManufacturerName}` : "Click a tier to browse its materials"}
+                  Click a tier to browse its materials
                 </CardDescription>
               </div>
             </div>
@@ -437,7 +409,7 @@ export default function Dashboard() {
                     <div
                       key={cost.level}
                       className="relative flex items-stretch border border-border rounded-xl overflow-hidden cursor-pointer hover:shadow-md hover:border-primary/40 transition-all group bg-card"
-                      onClick={() => navigate(`/materials?cost=${cost.level}${manufacturerFilter ? `&manufacturer=${manufacturerFilter}` : ""}`)}
+                      onClick={() => navigate(`/materials?cost=${cost.level}`)}
                       data-testid={`cost-level-${cost.level}`}
                     >
                       <div className="w-1 bg-primary shrink-0" />
