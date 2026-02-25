@@ -103,7 +103,7 @@ function AppLayout() {
               <img
                 src={logoSrc}
                 alt="Netley Millwork"
-                className="h-7 w-auto"
+                className="h-7 w-auto max-w-[130px] sm:max-w-[160px] object-contain"
                 data-testid="img-header-logo"
               />
               <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium leading-none">
