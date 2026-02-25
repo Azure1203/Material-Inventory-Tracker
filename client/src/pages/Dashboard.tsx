@@ -109,7 +109,7 @@ export default function Dashboard() {
           <div ref={searchRef} className="relative max-w-xl">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
-              placeholder="Search materials by name, code, manufacturer..."
+              placeholder="Search materials..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setSearchFocused(true)}
@@ -208,57 +208,66 @@ export default function Dashboard() {
           ))}
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
           <div>
-            <span className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-1.5">
-              <Factory className="h-4 w-4" />
-              Filter by Manufacturer
-            </span>
+            <div className="border-l-2 border-primary pl-3 mb-3">
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                <Factory className="h-3.5 w-3.5" />
+                Filter by Manufacturer
+              </p>
+            </div>
             <div className="flex flex-wrap gap-2">
-              <Button
-                variant={manufacturerFilter === null ? "default" : "outline"}
+              <button
                 onClick={() => setManufacturerFilter(null)}
+                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all shadow-sm ${
+                  manufacturerFilter === null
+                    ? "bg-primary text-primary-foreground ring-2 ring-primary/30 ring-offset-1"
+                    : "bg-card border hover:border-primary/50 hover:bg-primary/5"
+                }`}
                 data-testid="button-filter-manufacturer-all"
               >
-                All
-              </Button>
+                All Manufacturers
+              </button>
               {manufacturers?.map(m => (
-                <Button
+                <button
                   key={m.id}
-                  variant={manufacturerFilter === m.id ? "default" : "outline"}
-                  onClick={() => {
-                    setManufacturerFilter(m.id);
-                    navigate(`/materials?manufacturer=${m.id}`);
-                  }}
+                  onClick={() => setManufacturerFilter(manufacturerFilter === m.id ? null : m.id)}
+                  className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all shadow-sm ${
+                    manufacturerFilter === m.id
+                      ? "bg-primary text-primary-foreground ring-2 ring-primary/30 ring-offset-1"
+                      : "bg-card border hover:border-primary/50 hover:bg-primary/5"
+                  }`}
                   data-testid={`button-filter-manufacturer-${m.id}`}
                 >
                   {m.logoUrl ? (
-                    <img src={thumbUrl(m.logoUrl, 48)} alt="" className="h-5 w-5 rounded-sm object-contain shrink-0 mr-1.5" data-testid={`img-dashboard-manufacturer-logo-${m.id}`} />
+                    <img src={thumbUrl(m.logoUrl, 48)} alt="" className="h-6 w-6 rounded-sm object-contain shrink-0" data-testid={`img-dashboard-manufacturer-logo-${m.id}`} />
                   ) : null}
                   {m.name}
-                </Button>
+                </button>
               ))}
             </div>
           </div>
 
           <div>
-            <span className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-1.5">
-              <Building2 className="h-4 w-4" />
-              Suppliers
-            </span>
+            <div className="border-l-2 border-primary pl-3 mb-3">
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                <Building2 className="h-3.5 w-3.5" />
+                Browse by Supplier
+              </p>
+            </div>
             <div className="flex flex-wrap gap-2">
               {suppliers?.map(s => (
-                <Button
+                <button
                   key={s.id}
-                  variant="outline"
                   onClick={() => navigate(`/materials?supplier=${s.id}`)}
+                  className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium bg-card border hover:border-primary/50 hover:bg-primary/5 transition-all shadow-sm"
                   data-testid={`button-filter-supplier-${s.id}`}
                 >
                   {s.logoUrl ? (
-                    <img src={thumbUrl(s.logoUrl, 48)} alt="" className="h-5 w-5 rounded-sm object-contain shrink-0 mr-1.5" data-testid={`img-dashboard-supplier-logo-${s.id}`} />
+                    <img src={thumbUrl(s.logoUrl, 48)} alt="" className="h-6 w-6 rounded-sm object-contain shrink-0" data-testid={`img-dashboard-supplier-logo-${s.id}`} />
                   ) : null}
                   {s.name}
-                </Button>
+                </button>
               ))}
             </div>
           </div>

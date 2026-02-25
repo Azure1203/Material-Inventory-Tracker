@@ -70,6 +70,11 @@ The schema defines a hierarchical structure:
 
 ## Design Decisions
 
+### App Identity
+- **Browser Tab**: "Netley Millwork | Material Database" (set in `client/index.html`)
+- **Header Bar**: Always-visible Netley Millwork logo (full color PNG, no filters) + "Material Database" subtitle — visible on both mobile and desktop since the sidebar collapses on mobile
+- **Sidebar**: Logo wrapped in white/95 background shelf so charcoal text + gold trim bar show naturally against the dark charcoal sidebar
+
 ### Brand Identity & Theme
 - **Brand Colors**: Gold (#CDAB4A), Charcoal (#2E2E2E), Brown (#807161), Off-white (#F7F4F2) — matching netleymillwork.com
 - **Font**: Poppins (Google Fonts) as primary sans-serif

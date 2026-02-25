@@ -56,13 +56,18 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="p-4 border-b border-sidebar-border">
-        <div className="flex items-center justify-center py-1">
-          <img
-            src={logoSrc}
-            alt="Netley Millwork"
-            className="h-8 w-auto brightness-0 invert opacity-90"
-            data-testid="img-sidebar-logo"
-          />
+        <div className="flex flex-col items-center gap-1.5 py-1">
+          <div className="bg-white/95 rounded-md px-3 py-2 inline-block">
+            <img
+              src={logoSrc}
+              alt="Netley Millwork"
+              className="h-8 w-auto"
+              data-testid="img-sidebar-logo"
+            />
+          </div>
+          <span className="text-[10px] uppercase tracking-widest text-sidebar-foreground/50 font-medium">
+            Material Database
+          </span>
         </div>
       </SidebarHeader>
       <SidebarContent>

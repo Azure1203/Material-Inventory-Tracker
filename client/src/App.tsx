@@ -15,6 +15,7 @@ import { Lock, LogOut, Shield } from "lucide-react";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/Dashboard";
 import Materials from "@/pages/Materials";
+import logoSrc from "@assets/Netley-Logo-Horizontal_1771978155804.png";
 
 const Suppliers = lazy(() => import("@/pages/Suppliers"));
 const Manufacturers = lazy(() => import("@/pages/Manufacturers"));
@@ -95,11 +96,24 @@ function AppLayout() {
         <div className="flex flex-col flex-1 overflow-hidden">
           <header className="flex items-center justify-between gap-2 px-3 py-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <SidebarTrigger data-testid="button-sidebar-toggle" />
+
+            <div className="flex flex-col items-center gap-0" data-testid="header-brand">
+              <img
+                src={logoSrc}
+                alt="Netley Millwork"
+                className="h-6 sm:h-7 w-auto"
+                data-testid="img-header-logo"
+              />
+              <span className="text-[9px] sm:text-[10px] uppercase tracking-widest text-muted-foreground font-medium leading-none mt-0.5">
+                Material Database
+              </span>
+            </div>
+
             <div className="flex items-center gap-2">
               {isAdmin && (
                 <div className="flex items-center gap-1.5 text-xs font-medium text-primary px-2 py-1 rounded-md bg-primary/10">
                   <Shield className="h-3 w-3" />
-                  <span>Admin</span>
+                  <span className="hidden sm:inline">Admin</span>
                 </div>
               )}
               <AdminToggle />
