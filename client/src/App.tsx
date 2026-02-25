@@ -99,7 +99,7 @@ function AppLayout() {
               <SidebarTrigger data-testid="button-sidebar-toggle" />
             </div>
 
-            <div className="flex flex-col items-center gap-0.5" data-testid="header-brand">
+            <div className="flex items-center justify-center" data-testid="header-brand">
               <div className="dark:bg-white/95 dark:rounded-md dark:px-2.5 dark:py-1">
                 <img
                   src={logoSrc}
@@ -108,12 +108,6 @@ function AppLayout() {
                   data-testid="img-header-logo"
                 />
               </div>
-              <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium leading-none">
-                Material Availability Database
-              </span>
-              <span className="text-[8px] text-muted-foreground/70 font-normal leading-none tracking-wide">
-                Meant To Serve As Guideline Only
-              </span>
             </div>
 
             <div className="flex items-center justify-end gap-1">

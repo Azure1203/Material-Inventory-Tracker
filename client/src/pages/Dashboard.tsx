@@ -112,11 +112,12 @@ export default function Dashboard() {
           NM
         </span>
         <div className="relative z-10">
+          <p className="text-primary text-xs font-semibold uppercase tracking-widest mb-1.5 opacity-90">Netley Millwork</p>
           <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1.5" data-testid="text-dashboard-title">
-            Material Availability
+            Material Availability Database
           </h1>
           <p className="text-white/65 text-sm sm:text-base max-w-2xl mb-5" data-testid="text-dashboard-disclaimer">
-            This site is meant to service as a guideline to the Netley Millwork's material availability.
+            Meant To Serve As Guideline Only
           </p>
           <div ref={searchRef} className="relative w-full sm:max-w-xl">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
