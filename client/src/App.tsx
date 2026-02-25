@@ -94,24 +94,26 @@ function AppLayout() {
       <div className="flex h-screen w-full">
         <AppSidebar />
         <div className="flex flex-col flex-1 overflow-hidden">
-          <header className="flex items-center justify-between gap-2 px-3 py-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <SidebarTrigger data-testid="button-sidebar-toggle" />
+          <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 py-2.5 border-b bg-background z-10 shrink-0">
+            <div className="flex items-center">
+              <SidebarTrigger data-testid="button-sidebar-toggle" />
+            </div>
 
-            <div className="flex flex-col items-center gap-0" data-testid="header-brand">
+            <div className="flex flex-col items-center gap-0.5" data-testid="header-brand">
               <img
                 src={logoSrc}
                 alt="Netley Millwork"
-                className="h-6 sm:h-7 w-auto"
+                className="h-7 w-auto"
                 data-testid="img-header-logo"
               />
-              <span className="text-[9px] sm:text-[10px] uppercase tracking-widest text-muted-foreground font-medium leading-none mt-0.5">
+              <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium leading-none">
                 Material Database
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-end gap-1">
               {isAdmin && (
-                <div className="flex items-center gap-1.5 text-xs font-medium text-primary px-2 py-1 rounded-md bg-primary/10">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-primary px-2 py-1 rounded-md bg-primary/10 mr-1">
                   <Shield className="h-3 w-3" />
                   <span className="hidden sm:inline">Admin</span>
                 </div>
