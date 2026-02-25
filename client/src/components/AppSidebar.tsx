@@ -11,47 +11,30 @@ import {
   SidebarMenuItem,
   SidebarHeader,
   SidebarFooter,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import logoSrc from "@assets/Netley-Logo-Horizontal_1771978155804.png";
 
 const mainItems = [
-  {
-    title: "Dashboard",
-    url: "/",
-    icon: Home,
-  },
-  {
-    title: "Materials",
-    url: "/materials",
-    icon: Package,
-  },
+  { title: "Dashboard", url: "/", icon: Home },
+  { title: "Materials", url: "/materials", icon: Package },
 ];
 
 const manageItems = [
-  {
-    title: "Suppliers",
-    url: "/suppliers",
-    icon: Building2,
-  },
-  {
-    title: "Manufacturers",
-    url: "/manufacturers",
-    icon: Factory,
-  },
-  {
-    title: "Color Collections",
-    url: "/color-ranges",
-    icon: Palette,
-  },
-  {
-    title: "Product Groups",
-    url: "/product-groups",
-    icon: Layers,
-  },
+  { title: "Suppliers", url: "/suppliers", icon: Building2 },
+  { title: "Manufacturers", url: "/manufacturers", icon: Factory },
+  { title: "Color Collections", url: "/color-ranges", icon: Palette },
+  { title: "Product Groups", url: "/product-groups", icon: Layers },
 ];
 
 export function AppSidebar() {
   const [location] = useLocation();
+  const { setOpenMobile, setOpen } = useSidebar();
+
+  const handleNavClick = () => {
+    setOpenMobile(false);
+    setOpen(false);
+  };
 
   return (
     <Sidebar>
@@ -78,7 +61,11 @@ export function AppSidebar() {
               {mainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={location === item.url}>
-                    <Link href={item.url} data-testid={`nav-${item.title.toLowerCase()}`}>
+                    <Link
+                      href={item.url}
+                      onClick={handleNavClick}
+                      data-testid={`nav-${item.title.toLowerCase()}`}
+                    >
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                     </Link>
@@ -95,7 +82,11 @@ export function AppSidebar() {
               {manageItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={location === item.url}>
-                    <Link href={item.url} data-testid={`nav-${item.title.toLowerCase().replace(" ", "-")}`}>
+                    <Link
+                      href={item.url}
+                      onClick={handleNavClick}
+                      data-testid={`nav-${item.title.toLowerCase().replace(" ", "-")}`}
+                    >
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                     </Link>
