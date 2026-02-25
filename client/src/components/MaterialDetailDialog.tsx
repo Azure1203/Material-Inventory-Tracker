@@ -3,7 +3,6 @@ import { createPortal } from "react-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { getCostLevelDisplay, getCostLevelColor, thumbUrl } from "@/lib/utils";
@@ -33,14 +32,14 @@ function DetailImage({ src, alt, onClick }: { src: string; alt: string; onClick:
   return (
     <div className="flex justify-center">
       <div className="relative inline-flex">
-        <div className="max-h-48 rounded-lg border overflow-hidden bg-muted inline-flex relative">
-          {!loaded && <Skeleton className="h-48 w-48 rounded-lg" />}
+        <div className="max-h-64 rounded-lg border border-border/50 overflow-hidden bg-muted/30 inline-flex relative shadow-sm">
+          {!loaded && <Skeleton className="h-64 w-64 rounded-lg" />}
           <img
             ref={imgRef}
-            src={thumbUrl(src, 400)}
+            src={thumbUrl(src, 500)}
             alt={alt}
             loading="lazy"
-            className={`max-h-48 rounded-lg object-contain cursor-pointer transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
+            className={`max-h-64 rounded-lg object-contain cursor-pointer transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
             onClick={onClick}
             onLoad={() => setLoaded(true)}
             onError={() => setError(true)}
@@ -51,7 +50,7 @@ function DetailImage({ src, alt, onClick }: { src: string; alt: string; onClick:
           <PopoverTrigger asChild>
             <button
               type="button"
-              className="absolute bottom-1 right-1 h-5 w-5 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors z-10"
+              className="absolute bottom-1.5 right-1.5 h-5 w-5 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors z-10"
               data-testid="button-color-disclaimer-detail"
             >
               <Info className="h-3.5 w-3.5" />
@@ -105,6 +104,20 @@ function Lightbox({ src, alt, onClose }: { src: string; alt: string; onClose: ()
   );
 }
 
+function SectionHeader({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-3 mb-3">
+      <div className="h-px w-4 bg-primary/50" />
+      <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{children}</h4>
+      <div className="h-px flex-1 bg-primary/20" />
+    </div>
+  );
+}
+
+function GoldDivider() {
+  return <div className="h-px w-full bg-gradient-to-r from-primary/40 via-primary/20 to-transparent" />;
+}
+
 export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: MaterialDetailDialogProps) {
   const [showLightbox, setShowLightbox] = useState(false);
 
@@ -131,7 +144,7 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
         <DialogHeader>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <DialogTitle className="text-xl" data-testid="text-material-title">
+              <DialogTitle className="text-xl font-semibold" data-testid="text-material-title">
                 {material.productCode && !material.name.startsWith(material.productCode) 
                   ? `${material.productCode} - ${material.name}` 
                   : material.name}
@@ -149,7 +162,7 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
           </div>
         </DialogHeader>
 
-        <div className="space-y-6 mt-4">
+        <div className="space-y-5 mt-4">
           {material.imageUrl && (
             <DetailImage
               src={material.imageUrl}
@@ -158,64 +171,72 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
             />
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            <DetailItem label="Product Code" value={material.productCode} testId="text-product-code" />
-            <DetailItem label="Name" value={material.name} testId="text-name" />
-            <DetailItem label="Storage System Type #" value={material.storageSystemType} testId="text-storage-system-type" />
-            <DetailItem 
-              label="Cost Level" 
-              value={
-                <div>
-                  <span className={`font-semibold ${getCostLevelColor(material.costLevel)}`}>
-                    {getCostLevelDisplay(material.costLevel)}
-                  </span>
-                  <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground" data-testid="notice-cost-guideline-detail">
-                    <Info className="h-3 w-3 shrink-0" />
-                    <span>Cost category is meant to serve as a guideline only.</span>
+          <GoldDivider />
+
+          <div>
+            <SectionHeader>Product Details</SectionHeader>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <DetailItem label="Product Code" value={material.productCode} testId="text-product-code" />
+              <DetailItem label="Name" value={material.name} testId="text-name" />
+              <DetailItem label="Storage System Type #" value={material.storageSystemType} testId="text-storage-system-type" />
+              <DetailItem 
+                label="Cost Level" 
+                value={
+                  <div>
+                    <span className={`font-semibold ${getCostLevelColor(material.costLevel)}`}>
+                      {getCostLevelDisplay(material.costLevel)}
+                    </span>
+                    <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground" data-testid="notice-cost-guideline-detail">
+                      <Info className="h-3 w-3 shrink-0" />
+                      <span>Cost category is meant to serve as a guideline only.</span>
+                    </div>
                   </div>
-                </div>
-              }
-              testId="text-cost-level"
-            />
-            <DetailItem 
-              label="Stock Type" 
-              value={
-                <Badge variant={material.stockStatus === STOCK_STATUS.NON_STOCK ? "secondary" : "default"} data-testid="badge-stock-type">
-                  {STOCK_STATUS_LABELS[material.stockStatus] || material.stockStatus}
-                </Badge>
-              }
-              testId="text-stock-type"
-            />
+                }
+                testId="text-cost-level"
+              />
+              <DetailItem 
+                label="Stock Type" 
+                value={
+                  <Badge variant={material.stockStatus === STOCK_STATUS.NON_STOCK ? "secondary" : "default"} data-testid="badge-stock-type">
+                    {STOCK_STATUS_LABELS[material.stockStatus] || material.stockStatus}
+                  </Badge>
+                }
+                testId="text-stock-type"
+              />
+            </div>
           </div>
 
-          <Separator />
+          <GoldDivider />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            <DetailItem label="Manufacturer" value={material.manufacturer?.name} testId="text-manufacturer" />
-            <DetailItem label="Supplier" value={material.supplier?.name} testId="text-supplier" />
-            <DetailItem label="Color Collection" value={material.colorRange?.name} testId="text-color-collection" />
-            <DetailItem 
-              label="Product Groups" 
-              value={
-                material.productGroups && material.productGroups.length > 0
-                  ? <div className="flex flex-wrap gap-1" data-testid="container-product-groups">
-                      {material.productGroups.map(pg => (
-                        <Badge key={pg.id} variant="secondary" className="text-xs" data-testid={`badge-product-group-${pg.id}`}>
-                          {pg.name}
-                        </Badge>
-                      ))}
-                    </div>
-                  : null
-              }
-              testId="text-product-group" 
-            />
+          <div>
+            <SectionHeader>Sourcing</SectionHeader>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <DetailItem label="Manufacturer" value={material.manufacturer?.name} testId="text-manufacturer" />
+              <DetailItem label="Supplier" value={material.supplier?.name} testId="text-supplier" />
+              <DetailItem label="Color Collection" value={material.colorRange?.name} testId="text-color-collection" />
+              <DetailItem 
+                label="Product Groups" 
+                value={
+                  material.productGroups && material.productGroups.length > 0
+                    ? <div className="flex flex-wrap gap-1" data-testid="container-product-groups">
+                        {material.productGroups.map(pg => (
+                          <Badge key={pg.id} variant="secondary" className="text-xs" data-testid={`badge-product-group-${pg.id}`}>
+                            {pg.name}
+                          </Badge>
+                        ))}
+                      </div>
+                    : null
+                }
+                testId="text-product-group" 
+              />
+            </div>
           </div>
 
           {material.sizes && material.sizes.length > 0 && (
             <>
-              <Separator />
+              <GoldDivider />
               <div>
-                <h4 className="text-sm font-medium text-muted-foreground mb-2">Size Options</h4>
+                <SectionHeader>Size Options</SectionHeader>
                 <div className="flex flex-wrap gap-2" data-testid="container-sizes">
                   {material.sizes.map(s => (
                     <Badge key={s.id} variant="secondary" className="text-sm py-1 px-3" data-testid={`badge-size-${s.id}`}>
@@ -229,14 +250,14 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
 
           {material.websiteUrl && (
             <>
-              <Separator />
+              <GoldDivider />
               <div>
-                <h4 className="text-sm font-medium text-muted-foreground mb-2">Website</h4>
+                <SectionHeader>Website</SectionHeader>
                 <a 
                   href={material.websiteUrl} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-sm inline-flex items-center gap-1 underline"
+                  className="text-sm inline-flex items-center gap-1.5 text-primary font-medium hover:underline"
                   data-testid="link-material-website"
                 >
                   {material.websiteUrl}
@@ -248,10 +269,10 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
 
           {material.notes && (
             <>
-              <Separator />
+              <GoldDivider />
               <div>
-                <h4 className="text-sm font-medium text-muted-foreground mb-2">Notes</h4>
-                <p className="text-sm whitespace-pre-wrap" data-testid="text-notes">{material.notes}</p>
+                <SectionHeader>Notes</SectionHeader>
+                <p className="text-sm whitespace-pre-wrap leading-relaxed" data-testid="text-notes">{material.notes}</p>
               </div>
             </>
           )}
@@ -273,9 +294,9 @@ export function MaterialDetailDialog({ open, onOpenChange, material, onEdit }: M
 function DetailItem({ label, value, testId }: { label: string; value: React.ReactNode; testId?: string }) {
   return (
     <div>
-      <dt className="text-sm font-medium text-muted-foreground">{label}</dt>
-      <dd className="mt-1" data-testid={testId}>
-        {value || <span className="text-muted-foreground">-</span>}
+      <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">{label}</dt>
+      <dd className="text-sm font-medium" data-testid={testId}>
+        {value || <span className="text-muted-foreground/60 italic text-xs font-normal">Not specified</span>}
       </dd>
     </div>
   );

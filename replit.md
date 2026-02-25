@@ -70,6 +70,21 @@ The schema defines a hierarchical structure:
 
 ## Design Decisions
 
+### Brand Identity & Theme
+- **Brand Colors**: Gold (#CDAB4A), Charcoal (#2E2E2E), Brown (#807161), Off-white (#F7F4F2) — matching netleymillwork.com
+- **Font**: Poppins (Google Fonts) as primary sans-serif
+- **Sidebar**: Charcoal background with gold accent for active items, official Netley Millwork horizontal logo
+- **Dashboard Hero**: Charcoal-to-brown gradient with gold accent line, includes disclaimer text and prominent search bar
+- **Stat Cards**: Gold left-edge accent bars
+- **Detail Dialog**: Gold gradient dividers, uppercase section headers with gold accent lines
+- **Stock Badges**: Color-coded with icons — green (Stocked), amber (Local Stock), muted (Non-Stock) via `StockBadge` component in Materials.tsx
+- **Shadows**: Real shadow values enabled (previously all 0 opacity / flat)
+- **Active Filters**: Highlighted with gold border and background tint, visible count indicator
+
+### Dashboard Disclaimer
+- Text: "This site is meant to service as a guideline to the Netley Millwork's material availability."
+- Displayed in the hero section below the "Material Availability" heading
+
 ### Stock Classification Terminology (3-Tier System)
 - **Stocked At Netley Millwork** (`stockStatus: "stocked"`): A regularly stocked material always available
 - **Local Stock, 2-3 Week Leadtime** (`stockStatus: "local_stock"`): Available locally but requires lead time

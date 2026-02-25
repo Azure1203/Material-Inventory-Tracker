@@ -16,7 +16,7 @@ import { useLookupData } from "@/hooks/use-lookup-data";
 import { MaterialDialog } from "@/components/MaterialDialog";
 import { MaterialDetailDialog } from "@/components/MaterialDetailDialog";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-import { Plus, Search, Edit, Trash2, ExternalLink, Package, Filter, X, Info } from "lucide-react";
+import { Plus, Search, Edit, Trash2, ExternalLink, Package, X, Info, Filter, CheckCircle, Clock, Truck } from "lucide-react";
 import { STOCK_STATUS, STOCK_STATUS_LABELS, type MaterialWithRelations } from "@shared/schema";
 import { useAdminAuth } from "@/lib/adminAuth";
 
@@ -84,6 +84,31 @@ function LazyImage({ src, alt, className, sizeClass, onClick }: { src: string; a
         style={onClick ? { cursor: "pointer" } : undefined}
       />
     </div>
+  );
+}
+
+function StockBadge({ status }: { status: string }) {
+  if (status === STOCK_STATUS.STOCKED) {
+    return (
+      <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5" data-testid="badge-stock-stocked">
+        <CheckCircle className="h-3 w-3 mr-1" />
+        Stocked
+      </Badge>
+    );
+  }
+  if (status === STOCK_STATUS.LOCAL_STOCK) {
+    return (
+      <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 border-amber-200 dark:border-amber-800 text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5" data-testid="badge-stock-local">
+        <Clock className="h-3 w-3 mr-1" />
+        Local Stock
+      </Badge>
+    );
+  }
+  return (
+    <Badge variant="secondary" className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5" data-testid="badge-stock-non">
+      <Truck className="h-3 w-3 mr-1" />
+      Non-Stock
+    </Badge>
   );
 }
 
@@ -181,7 +206,8 @@ export default function Materials() {
     setColorRangeFilter("all");
   };
 
-  const hasFilters = searchQuery || stockFilter !== "all" || supplierFilter !== "all" || manufacturerFilter !== "all" || productGroupFilter !== "all" || costFilter !== "all" || colorRangeFilter !== "all";
+  const activeFilterCount = [stockFilter, supplierFilter, manufacturerFilter, productGroupFilter, costFilter, colorRangeFilter].filter(f => f !== "all").length + (searchQuery ? 1 : 0);
+  const hasFilters = activeFilterCount > 0;
 
   const handleEdit = (material: MaterialWithRelations) => {
     setEditingMaterial(material);
@@ -212,107 +238,135 @@ export default function Materials() {
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold">Materials</h1>
-          <p className="text-sm text-muted-foreground">Manage your material inventory</p>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight" data-testid="text-materials-title">Materials</h1>
+          <p className="text-sm text-muted-foreground">Browse and manage your material catalog</p>
         </div>
         {isAdmin && (
-          <Button onClick={handleAddNew} data-testid="button-add-material">
+          <Button onClick={handleAddNew} className="shadow-sm" data-testid="button-add-material">
             <Plus className="h-4 w-4 mr-2" />
             Add Material
           </Button>
         )}
       </div>
 
-      <div className="flex items-center gap-2 rounded-md border px-3 sm:px-4 py-2 text-xs sm:text-sm text-muted-foreground" data-testid="notice-cost-guideline">
-        <Info className="h-4 w-4 shrink-0" />
+      <div className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 sm:px-4 py-2.5 text-xs sm:text-sm text-muted-foreground" data-testid="notice-cost-guideline">
+        <Info className="h-4 w-4 shrink-0 text-primary" />
         <span>Cost category is meant to serve as a guideline only.</span>
       </div>
 
-      <Card>
-        <CardHeader className="p-3 sm:p-6 pb-3">
+      <Card className="shadow-sm">
+        <CardHeader className="p-3 sm:p-5 pb-3">
           <div className="flex flex-col gap-3 sm:gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search materials..."
+                placeholder="Search by name, code, manufacturer, supplier..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
+                className="pl-9 pr-9 h-11 text-sm border-2 border-transparent focus:border-primary/40 transition-colors"
                 data-testid="input-search"
               />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  data-testid="button-clear-search"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
-            <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
-              <Select value={stockFilter} onValueChange={setStockFilter}>
-                <SelectTrigger className="w-full sm:w-[160px]" data-testid="filter-stock">
-                  <SelectValue placeholder="Stock type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Materials</SelectItem>
-                  <SelectItem value="stocked">Stocked At Netley Millwork</SelectItem>
-                  <SelectItem value="local_stock">Local Stock, 2-3 Week Leadtime</SelectItem>
-                  <SelectItem value="non_stock">Non-Stock, 6-12 Week Leadtime</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+              <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 flex-1">
+                <Select value={stockFilter} onValueChange={setStockFilter}>
+                  <SelectTrigger className={`w-full sm:w-[170px] text-xs sm:text-sm ${stockFilter !== "all" ? "border-primary/40 bg-primary/5" : ""}`} data-testid="filter-stock">
+                    <SelectValue placeholder="Stock type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Stock Types</SelectItem>
+                    <SelectItem value="stocked">Stocked At Netley</SelectItem>
+                    <SelectItem value="local_stock">Local Stock, 2-3 Wk</SelectItem>
+                    <SelectItem value="non_stock">Non-Stock, 6-12 Wk</SelectItem>
+                  </SelectContent>
+                </Select>
 
-              <Select value={supplierFilter} onValueChange={setSupplierFilter}>
-                <SelectTrigger className="w-full sm:w-[140px]" data-testid="filter-supplier">
-                  <SelectValue placeholder="Supplier" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Suppliers</SelectItem>
-                  {suppliers?.map(s => (
-                    <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <Select value={supplierFilter} onValueChange={setSupplierFilter}>
+                  <SelectTrigger className={`w-full sm:w-[150px] text-xs sm:text-sm ${supplierFilter !== "all" ? "border-primary/40 bg-primary/5" : ""}`} data-testid="filter-supplier">
+                    <SelectValue placeholder="Supplier" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Suppliers</SelectItem>
+                    {suppliers?.map(s => (
+                      <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-              <Select value={manufacturerFilter} onValueChange={setManufacturerFilter}>
-                <SelectTrigger className="w-full sm:w-[160px]" data-testid="filter-manufacturer">
-                  <SelectValue placeholder="Manufacturer" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Manufacturers</SelectItem>
-                  {manufacturers?.map(m => (
-                    <SelectItem key={m.id} value={String(m.id)}>{m.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <Select value={manufacturerFilter} onValueChange={setManufacturerFilter}>
+                  <SelectTrigger className={`w-full sm:w-[170px] text-xs sm:text-sm ${manufacturerFilter !== "all" ? "border-primary/40 bg-primary/5" : ""}`} data-testid="filter-manufacturer">
+                    <SelectValue placeholder="Manufacturer" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Manufacturers</SelectItem>
+                    {manufacturers?.map(m => (
+                      <SelectItem key={m.id} value={String(m.id)}>{m.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-              <Select value={productGroupFilter} onValueChange={setProductGroupFilter}>
-                <SelectTrigger className="w-full sm:w-[160px]" data-testid="filter-product-group">
-                  <SelectValue placeholder="Product Group" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Groups</SelectItem>
-                  {productGroups?.map(pg => (
-                    <SelectItem key={pg.id} value={String(pg.id)}>{pg.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <Select value={productGroupFilter} onValueChange={setProductGroupFilter}>
+                  <SelectTrigger className={`w-full sm:w-[170px] text-xs sm:text-sm ${productGroupFilter !== "all" ? "border-primary/40 bg-primary/5" : ""}`} data-testid="filter-product-group">
+                    <SelectValue placeholder="Product Group" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Groups</SelectItem>
+                    {productGroups?.map(pg => (
+                      <SelectItem key={pg.id} value={String(pg.id)}>{pg.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-              <Select value={costFilter} onValueChange={setCostFilter}>
-                <SelectTrigger className="w-full sm:w-[120px]" data-testid="filter-cost">
-                  <SelectValue placeholder="Cost" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Costs</SelectItem>
-                  <SelectItem value="1">$ (Level 1)</SelectItem>
-                  <SelectItem value="2">$$ (Level 2)</SelectItem>
-                  <SelectItem value="3">$$$ (Level 3)</SelectItem>
-                  <SelectItem value="4">$$$$ (Level 4)</SelectItem>
-                  <SelectItem value="5">$$$$$ (Level 5)</SelectItem>
-                </SelectContent>
-              </Select>
+                <Select value={costFilter} onValueChange={setCostFilter}>
+                  <SelectTrigger className={`w-full sm:w-[130px] text-xs sm:text-sm ${costFilter !== "all" ? "border-primary/40 bg-primary/5" : ""}`} data-testid="filter-cost">
+                    <SelectValue placeholder="Cost Level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Costs</SelectItem>
+                    <SelectItem value="1">$ (Level 1)</SelectItem>
+                    <SelectItem value="2">$$ (Level 2)</SelectItem>
+                    <SelectItem value="3">$$$ (Level 3)</SelectItem>
+                    <SelectItem value="4">$$$$ (Level 4)</SelectItem>
+                    <SelectItem value="5">$$$$$ (Level 5)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
               {hasFilters && (
-                <Button variant="ghost" size="icon" onClick={clearFilters} className="col-span-1" data-testid="button-clear-filters">
-                  <X className="h-4 w-4" />
+                <Button variant="outline" size="sm" onClick={clearFilters} className="shrink-0 border-primary/30 text-primary hover:bg-primary/10" data-testid="button-clear-filters">
+                  <X className="h-3.5 w-3.5 mr-1.5" />
+                  Clear ({activeFilterCount})
                 </Button>
               )}
             </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">
+          <div className="px-3 sm:px-5 pb-2 flex items-center justify-between">
+            <p className="text-xs text-muted-foreground" data-testid="text-material-count">
+              {isLoading ? (
+                <Skeleton className="h-4 w-32 inline-block" />
+              ) : (
+                <>Showing <span className="font-medium text-foreground">{filteredMaterials.length}</span> of {materials?.length || 0} materials</>
+              )}
+            </p>
+            {hasFilters && (
+              <div className="flex items-center gap-1 text-xs text-primary">
+                <Filter className="h-3 w-3" />
+                <span>{activeFilterCount} filter{activeFilterCount !== 1 ? "s" : ""} active</span>
+              </div>
+            )}
+          </div>
+
           {isLoading ? (
             <div className="p-4 sm:p-6 space-y-3">
               {[1, 2, 3, 4, 5].map(i => (
@@ -320,14 +374,20 @@ export default function Materials() {
               ))}
             </div>
           ) : filteredMaterials.length === 0 ? (
-            <div className="text-center py-12">
-              <Package className="h-12 w-12 mx-auto text-muted-foreground opacity-50 mb-3" />
-              <p className="text-muted-foreground">
-                {materials?.length === 0 ? "No materials yet. Add your first material!" : "No materials match your filters"}
+            <div className="text-center py-16 px-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
+                <Package className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <p className="text-muted-foreground font-medium">
+                {materials?.length === 0 ? "No materials yet" : "No materials match your filters"}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {materials?.length === 0 ? "Add your first material to get started." : "Try adjusting your search or filter criteria."}
               </p>
               {hasFilters && (
-                <Button variant="ghost" onClick={clearFilters} className="mt-2">
-                  Clear filters
+                <Button variant="outline" onClick={clearFilters} className="mt-4" data-testid="button-clear-filters-empty">
+                  <X className="h-4 w-4 mr-2" />
+                  Clear all filters
                 </Button>
               )}
             </div>
@@ -336,7 +396,7 @@ export default function Materials() {
               <div className="hidden md:block overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow>
+                    <TableRow className="bg-muted/30">
                       <TableHead className="w-[50px]">Image</TableHead>
                       <TableHead>Material</TableHead>
                       <TableHead>Manufacturer</TableHead>
@@ -348,11 +408,11 @@ export default function Materials() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredMaterials.map(material => (
+                    {filteredMaterials.map((material, index) => (
                       <TableRow 
                         key={material.id} 
                         data-testid={`material-row-${material.id}`}
-                        className="cursor-pointer hover-elevate"
+                        className={`cursor-pointer transition-colors hover:bg-primary/5 ${index % 2 === 0 ? "bg-transparent" : "bg-muted/20"}`}
                         onClick={() => handleRowClick(material)}
                       >
                         <TableCell>
@@ -381,6 +441,7 @@ export default function Materials() {
                                   target="_blank" 
                                   rel="noopener noreferrer"
                                   className="text-muted-foreground hover:text-primary"
+                                  onClick={(e) => e.stopPropagation()}
                                   data-testid={`link-website-${material.id}`}
                                 >
                                   <ExternalLink className="h-3 w-3" />
@@ -388,7 +449,7 @@ export default function Materials() {
                               )}
                             </div>
                             <span className="text-xs text-muted-foreground">
-                              {[material.productCode, material.colorRange?.name, material.storageSystemType ? `Type: ${material.storageSystemType}` : null].filter(Boolean).join(" • ")}
+                              {[material.productCode, material.colorRange?.name, material.storageSystemType ? `Type: ${material.storageSystemType}` : null].filter(Boolean).join(" · ")}
                             </span>
                           </div>
                         </TableCell>
@@ -421,9 +482,7 @@ export default function Materials() {
                           </span>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={material.stockStatus === STOCK_STATUS.NON_STOCK ? "secondary" : "default"}>
-                            {STOCK_STATUS_LABELS[material.stockStatus] || material.stockStatus}
-                          </Badge>
+                          <StockBadge status={material.stockStatus} />
                         </TableCell>
                         {isAdmin && (
                           <TableCell>
@@ -458,16 +517,16 @@ export default function Materials() {
                   <div
                     key={material.id}
                     data-testid={`material-card-${material.id}`}
-                    className="p-3 cursor-pointer hover-elevate"
+                    className="p-3 cursor-pointer hover:bg-primary/5 transition-colors"
                     onClick={() => handleRowClick(material)}
                   >
                     <div className="flex gap-3">
                       <div className="relative shrink-0" style={{ width: "fit-content" }}>
                         {material.imageUrl ? (
-                          <LazyImage src={material.imageUrl} alt={material.name} sizeClass="h-12 w-12" />
+                          <LazyImage src={material.imageUrl} alt={material.name} sizeClass="h-14 w-14" />
                         ) : (
-                          <div className="h-12 w-12 rounded-md bg-muted flex items-center justify-center">
-                            <Package className="h-5 w-5 text-muted-foreground" />
+                          <div className="h-14 w-14 rounded-md bg-muted flex items-center justify-center">
+                            <Package className="h-6 w-6 text-muted-foreground" />
                           </div>
                         )}
                         <ColorDisclaimer size="md" />
@@ -480,18 +539,16 @@ export default function Materials() {
                                 ? `${material.productCode} ${material.name}` 
                                 : material.name}
                             </p>
-                            <p className="text-xs text-muted-foreground truncate">
+                            <p className="text-xs text-muted-foreground truncate mt-0.5">
                               {[material.manufacturer?.name, material.supplier?.name, material.storageSystemType ? `Type: ${material.storageSystemType}` : null].filter(Boolean).join(" / ")}
                             </p>
                           </div>
-                          <div className="flex items-center gap-1 shrink-0">
-                            <span className={`font-semibold text-xs ${getCostLevelColor(material.costLevel)}`}>
-                              {getCostLevelDisplay(material.costLevel)}
-                            </span>
-                            <Badge variant={material.stockStatus === STOCK_STATUS.NON_STOCK ? "secondary" : "default"} className="text-[10px] px-1.5 py-0">
-                              {STOCK_STATUS_LABELS[material.stockStatus] || material.stockStatus}
-                            </Badge>
-                          </div>
+                          <span className={`font-semibold text-xs shrink-0 ${getCostLevelColor(material.costLevel)}`}>
+                            {getCostLevelDisplay(material.costLevel)}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <StockBadge status={material.stockStatus} />
                         </div>
                         {material.sizes?.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-1.5">

@@ -12,6 +12,7 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar";
+import logoSrc from "@assets/Netley-Logo-Horizontal_1771978155804.png";
 
 const mainItems = [
   {
@@ -54,13 +55,14 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="p-4">
-        <div className="flex items-center gap-2">
-          <Package className="h-6 w-6 text-primary" />
-          <div>
-            <h1 className="font-semibold text-sm">Netley Millwork</h1>
-            <p className="text-xs text-muted-foreground">Material Inventory</p>
-          </div>
+      <SidebarHeader className="p-4 border-b border-sidebar-border">
+        <div className="flex items-center justify-center py-1">
+          <img
+            src={logoSrc}
+            alt="Netley Millwork"
+            className="h-8 w-auto brightness-0 invert opacity-90"
+            data-testid="img-sidebar-logo"
+          />
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -99,9 +101,9 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="p-4">
-        <p className="text-xs text-muted-foreground text-center">
-          2025 Material Availability
+      <SidebarFooter className="p-4 border-t border-sidebar-border">
+        <p className="text-xs text-sidebar-foreground/60 text-center">
+          2026 Material Availability
         </p>
       </SidebarFooter>
     </Sidebar>
