@@ -109,7 +109,10 @@ function AppLayout() {
                 />
               </div>
               <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium leading-none">
-                Material Database
+                Material Availability Database
+              </span>
+              <span className="text-[8px] text-muted-foreground/70 font-normal leading-none tracking-wide">
+                Meant To Serve As Guideline Only
               </span>
             </div>
 
