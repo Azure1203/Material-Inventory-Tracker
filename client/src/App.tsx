@@ -11,7 +11,7 @@ import { AdminAuthProvider, useAdminAuth } from "@/lib/adminAuth";
 import { AdminLoginDialog } from "@/components/AdminLoginDialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Lock, LogOut, Shield } from "lucide-react";
+import { Lock, LogOut, Shield, Menu } from "lucide-react";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/Dashboard";
 import Materials from "@/pages/Materials";
@@ -96,7 +96,9 @@ function AppLayout() {
         <div className="flex flex-col flex-1 overflow-hidden">
           <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 py-2.5 border-b bg-background z-10 shrink-0">
             <div className="flex items-center">
-              <SidebarTrigger data-testid="button-sidebar-toggle" />
+              <SidebarTrigger data-testid="button-sidebar-toggle">
+                <Menu className="h-5 w-5" />
+              </SidebarTrigger>
             </div>
 
             <div className="flex items-center justify-center" data-testid="header-brand">

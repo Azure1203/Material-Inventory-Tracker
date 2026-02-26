@@ -29,11 +29,10 @@ const manageItems = [
 
 export function AppSidebar() {
   const [location] = useLocation();
-  const { setOpenMobile, setOpen } = useSidebar();
+  const { setOpenMobile, isMobile } = useSidebar();
 
   const handleNavClick = () => {
-    setOpenMobile(false);
-    setOpen(false);
+    if (isMobile) setOpenMobile(false);
   };
 
   return (
