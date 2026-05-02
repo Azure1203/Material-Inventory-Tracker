@@ -1,0 +1,38 @@
+GHSA-gpj5-g38j-94v9@drizzle-orm-0.39.3
+Detected in Material Inventory Tracker
+Affected Packagedrizzle-orm
+Version0.39.3
+CVE IDGHSA-gpj5-g38j-94v9
+App Owner@charger1203
+CVE Details
+Summary
+
+Drizzle ORM improperly escaped quoted SQL identifiers in its dialect-specific escapeName() implementations. In affected versions, embedded identifier delimiters were not escaped before the identifier was wrapped in quotes or backticks.
+
+As a result, applications that pass attacker-controlled input to APIs that construct SQL identifiers or aliases, such as sql.identifier(), .as(), may allow an attacker to terminate the quoted identifier and inject SQL.
+Affected components
+
+The issue affects the identifier escaping logic used by the PostgreSQL, MySQL, SQLite, SingleStore, and Gel dialects.
+Impact
+
+This issue only affects applications that pass untrusted runtime input into identifier or alias construction. Common examples include dynamic sorting, dynamic report builders, and CTE or alias names derived from request parameters.
+
+Depending on the database dialect, query context, and database permissions, successful exploitation may enable blind or direct data disclosure, schema enumeration, query manipulation, privilege escalation, or destructive operations.
+
+Applications that use only static schema objects, or that strictly map user input through an allowlist of known column or alias names, are not affected.
+Details
+
+In affected versions, escapeName() wrapped the identifier but did not escape the quote delimiter inside the identifier value:
+
+    PostgreSQL / SQLite / Gel: " was not doubled to ""
+    MySQL / SingleStore: ` was not doubled to ``
+
+Because of this, crafted input containing the dialect-specific identifier delimiter could break out of the quoted identifier and be interpreted as SQL syntax.
+
+A representative vulnerable pattern is dynamic sorting using untrusted input:
+
+const sortField = req.query.sort || 'id';
+const rows = await db
+  .select()
+  .from(users)
+  .orderBy(sql.identifier(sortField));
