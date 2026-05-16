@@ -20,7 +20,7 @@ Users can browse, search and filter materials by manufacturer, supplier, color c
 
 ## 2. Build Snapshot
 
-- **Last Updated:** 2026-05-02 13:20 UTC
+- **Last Updated:** 2026-05-16 14:43 UTC
 - **Node entry points:**
   - Dev: `npm run dev` → `tsx server/index.ts` (Express + Vite middleware on port 5000)
   - Build: `npm run build` → `tsx script/build.ts` (esbuild server → `dist/index.cjs`, Vite client → `dist/public`)
@@ -161,6 +161,11 @@ Full list lives in `package.json`. Do **not** edit `package.json` directly — u
 
 ## 5. Changelog (newest first)
 
+### 2026-05-16 14:43 UTC — Fix: persistent PostgreSQL session store for admin auth
+- **Files:** `server/index.ts`
+- **What:** Replaced the default in-memory `MemoryStore` with a PostgreSQL-backed session store using `connect-pg-simple`. Session table (`session`) is auto-created via `createTableIfMissing: true`. Cookie lifetime extended to 7 days. `cookie.secure` now set dynamically: `true` in production (HTTPS), `false` in development.
+- **Why:** Admin login was non-functional in production — every server restart wiped all in-memory sessions, so `isAdmin: true` was lost immediately. Production logs showed the `MemoryStore` warning firing dozens of times per day and every `/api/auth/status` returning `{"isAdmin":false}`. Sessions are now persisted in the database and survive restarts.
+
 ### 2026-05-02 13:20 UTC — Security patch: drizzle-orm
 - **Files:** `package.json`, `package-lock.json`
 - **What:** Bumped `drizzle-orm` 0.39.3 → **0.45.2**
@@ -202,6 +207,7 @@ Full list lives in `package.json`. Do **not** edit `package.json` directly — u
 | Low | Browserslist data is 7 months old (build warning) | Cosmetic. Run `npx update-browserslist-db@latest` when convenient. |
 | Low | PostCSS warning: "did not pass the `from` option to `postcss.parse`" | Upstream plugin warning, no functional impact. |
 | Low | No automated test suite | Verification is manual / via curl + browser smoke tests. |
+| ~~Critical~~ | ~~Admin login non-functional in production (MemoryStore sessions lost on restart)~~ | **Fixed 2026-05-16** — switched to PostgreSQL session store. |
 
 No known security vulnerabilities outstanding as of this snapshot.
 
