@@ -32,6 +32,11 @@ app.use(
 
 app.use(express.urlencoded({ extended: false }));
 
+// Trust Replit's reverse proxy so req.secure = true on HTTPS requests.
+// Without this, express-session sees req.secure = false (internal HTTP)
+// and never sends the Set-Cookie header even when cookie.secure = true.
+app.set('trust proxy', 1);
+
 const PgSession = connectPgSimple(session);
 
 // Create the session table directly using our pool — avoids connect-pg-simple

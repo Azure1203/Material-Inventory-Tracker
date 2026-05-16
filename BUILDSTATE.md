@@ -20,7 +20,7 @@ Users can browse, search and filter materials by manufacturer, supplier, color c
 
 ## 2. Build Snapshot
 
-- **Last Updated:** 2026-05-16 18:20 UTC
+- **Last Updated:** 2026-05-16 18:30 UTC
 - **Node entry points:**
   - Dev: `npm run dev` → `tsx server/index.ts` (Express + Vite middleware on port 5000)
   - Build: `npm run build` → `tsx script/build.ts` (esbuild server → `dist/index.cjs`, Vite client → `dist/public`)
@@ -160,6 +160,11 @@ Full list lives in `package.json`. Do **not** edit `package.json` directly — u
 ---
 
 ## 5. Changelog (newest first)
+
+### 2026-05-16 18:30 UTC — Fix: trust proxy so session cookie is actually sent to browser
+- **Files:** `server/index.ts`
+- **What:** Added `app.set('trust proxy', 1)` before the session middleware.
+- **Why:** express-session checks `issecure(req)` before sending the `Set-Cookie` header when `cookie.secure: true`. Behind Replit's HTTPS-terminating reverse proxy, Express sees the internal connection as plain HTTP (`req.secure = false`). Without proxy trust, express-session silently saves the session to PostgreSQL but never sets the cookie in the response — so the browser never receives a session ID, every subsequent request appears anonymous, and `requireAdmin` always returns 401. With `trust proxy: 1`, Express honours Replit's `X-Forwarded-Proto: https` header, `req.secure` becomes `true`, and the `Set-Cookie` header is included correctly.
 
 ### 2026-05-16 18:20 UTC — Fix: session table creation in production build
 - **Files:** `server/index.ts`
