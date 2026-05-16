@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
+import { pool } from "./db";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
@@ -33,11 +34,22 @@ app.use(express.urlencoded({ extended: false }));
 
 const PgSession = connectPgSimple(session);
 
+// Create the session table directly using our pool — avoids connect-pg-simple
+// reading a bundled table.sql file that is absent in the production build.
+pool.query(`
+  CREATE TABLE IF NOT EXISTS "session" (
+    "sid" varchar NOT NULL COLLATE "default",
+    "sess" json NOT NULL,
+    "expire" timestamp(6) NOT NULL,
+    CONSTRAINT "session_pkey" PRIMARY KEY ("sid")
+  );
+  CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire");
+`).catch((err) => console.error("Failed to create session table:", err));
+
 app.use(
   session({
     store: new PgSession({
-      conString: process.env.DATABASE_URL,
-      createTableIfMissing: true,
+      pool,
       ttl: 7 * 24 * 60 * 60,
     }),
     secret: process.env.SESSION_SECRET || "fallback-secret-key",

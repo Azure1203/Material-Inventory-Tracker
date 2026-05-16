@@ -20,7 +20,7 @@ Users can browse, search and filter materials by manufacturer, supplier, color c
 
 ## 2. Build Snapshot
 
-- **Last Updated:** 2026-05-16 14:43 UTC
+- **Last Updated:** 2026-05-16 18:20 UTC
 - **Node entry points:**
   - Dev: `npm run dev` → `tsx server/index.ts` (Express + Vite middleware on port 5000)
   - Build: `npm run build` → `tsx script/build.ts` (esbuild server → `dist/index.cjs`, Vite client → `dist/public`)
@@ -160,6 +160,11 @@ Full list lives in `package.json`. Do **not** edit `package.json` directly — u
 ---
 
 ## 5. Changelog (newest first)
+
+### 2026-05-16 18:20 UTC — Fix: session table creation in production build
+- **Files:** `server/index.ts`
+- **What:** Replaced `createTableIfMissing: true` (which reads a `table.sql` file bundled inside `connect-pg-simple`) with a direct `pool.query("CREATE TABLE IF NOT EXISTS \"session\" ...")` call on startup. Also switched `PgSession` from accepting a connection string to accepting the `pool` object directly.
+- **Why:** The esbuild production bundle (`dist/index.cjs`) does not include the `table.sql` asset from `connect-pg-simple/node_modules`. On every server start, `_rawEnsureSessionStoreTable` threw `ENOENT: no such file or directory, open '.../dist/table.sql'`, silently preventing any session from being persisted. Result: login appeared to succeed but the next request returned 401 "Admin access required" because the session was never saved.
 
 ### 2026-05-16 14:43 UTC — Fix: persistent PostgreSQL session store for admin auth
 - **Files:** `server/index.ts`
